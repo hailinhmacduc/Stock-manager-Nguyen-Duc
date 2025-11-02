@@ -521,6 +521,56 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          condition: string
+          cost: number
+          id: string
+          last_move_at: string | null
+          location: string
+          received_at: string | null
+          serial_number: string
+          sku_id: string
+          sold_at: string | null
+          status: string
+          supplier: string | null
+        }
+        Insert: {
+          condition?: string
+          cost: number
+          id?: string
+          last_move_at?: string | null
+          location: string
+          received_at?: string | null
+          serial_number: string
+          sku_id: string
+          sold_at?: string | null
+          status?: string
+          supplier?: string | null
+        }
+        Update: {
+          condition?: string
+          cost?: number
+          id?: string
+          last_move_at?: string | null
+          location?: string
+          received_at?: string | null
+          serial_number?: string
+          sku_id?: string
+          sold_at?: string | null
+          status?: string
+          supplier?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_sku_id_fkey"
+            columns: ["sku_id"]
+            isOneToOne: false
+            referencedRelation: "sku_info"
+            referencedColumns: ["sku_id"]
+          },
+        ]
+      }
       loi_phat_tien: {
         Row: {
           id: number
@@ -942,6 +992,98 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sku_info: {
+        Row: {
+          brand: string
+          created_at: string | null
+          default_cost: number
+          model_name: string
+          sku_id: string
+          spec: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string | null
+          default_cost: number
+          model_name: string
+          sku_id: string
+          spec: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string | null
+          default_cost?: number
+          model_name?: string
+          sku_id?: string
+          spec?: string
+        }
+        Relationships: []
+      }
+      stock_move_logs: {
+        Row: {
+          from_location: string
+          id: string
+          item_id: string
+          moved_at: string | null
+          moved_by: string
+          serial_number: string
+          to_location: string
+        }
+        Insert: {
+          from_location: string
+          id?: string
+          item_id: string
+          moved_at?: string | null
+          moved_by: string
+          serial_number: string
+          to_location: string
+        }
+        Update: {
+          from_location?: string
+          id?: string
+          item_id?: string
+          moved_at?: string | null
+          moved_by?: string
+          serial_number?: string
+          to_location?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_move_logs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          password_hash: string
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id?: string
+          password_hash: string
+          role?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          password_hash?: string
+          role?: string
+        }
+        Relationships: []
       }
       website_articles: {
         Row: {
