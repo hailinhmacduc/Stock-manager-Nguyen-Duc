@@ -1,4 +1,8 @@
-providers = ["node@18"]
+providers = ["node"]
+
+[variables]
+NIXPACKS_NODE_VERSION = "18"
+NODE_VERSION = "18"
 
 [phases.install]
 cmds = [
