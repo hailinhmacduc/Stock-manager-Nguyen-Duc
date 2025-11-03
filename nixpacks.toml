@@ -1,4 +1,4 @@
-providers = ["node@20"]
+providers = ["node@18"]
 
 [phases.install]
 cmds = [
