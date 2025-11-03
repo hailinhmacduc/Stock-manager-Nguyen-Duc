@@ -37,6 +37,26 @@
     @apply w-full overflow-x-auto;
   }
   
+  /* Animation cho khung quét mã vạch */
+  @keyframes scanLine {
+    0% { transform: translateY(-100%); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(200px); opacity: 0; }
+  }
+  
+  .scan-line {
+    animation: scanLine 2s ease-in-out infinite;
+  }
+  
+  @keyframes cornerPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+  
+  .corner-pulse {
+    animation: cornerPulse 1.5s ease-in-out infinite;
+  }
+  
   .responsive-table table {
     @apply min-w-full text-sm md:text-base; /* Increased from text-xs to text-sm */
   }

@@ -50,7 +50,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <span className="font-bold text-lg md:text-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                     Quản Lý Tồn Kho
                   </span>
-                  <p className="text-xs text-muted-foreground font-medium">💻 Laptop Store System</p>
+                  <p className="text-xs text-muted-foreground font-medium">💻 Điện máy Nguyễn Đức</p>
                 </div>
               </Link>
               <div className="flex gap-1 md:gap-2 overflow-x-auto">

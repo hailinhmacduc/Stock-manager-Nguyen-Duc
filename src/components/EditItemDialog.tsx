@@ -205,6 +205,75 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
     }
   };
 
+  const handleDirectDelete = async () => {
+    if (!item || !deleteReason.trim()) {
+      toast({
+        title: '⚠️ Thiếu Thông Tin',
+        description: 'Vui lòng nhập lý do xóa sản phẩm',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // BƯỚC 1: Xóa tất cả các bản ghi liên quan trong `stock_move_logs`
+      // Đây là giải pháp triệt để để xử lý lỗi foreign key constraint
+      const { error: moveLogsError } = await supabase
+        .from('stock_move_logs')
+        .delete()
+        .eq('item_id', item.id);
+
+      if (moveLogsError) {
+        console.error('Error deleting move logs:', moveLogsError);
+        // Ném lỗi ra ngoài để dừng quá trình nếu không dọn dẹp được
+        throw new Error('Không thể dọn dẹp lịch sử luân chuyển sản phẩm.');
+      }
+      
+      // BƯỚC 2: Sau khi dọn dẹp thành công, tiến hành xóa sản phẩm
+      const { error: deleteItemError } = await supabase
+        .from('inventory_items')
+        .delete()
+        .eq('id', item.id);
+
+      if (deleteItemError) {
+        console.error('Delete error details:', deleteItemError);
+        throw deleteItemError;
+      }
+
+      toast({
+        title: '✅ Đã Xóa',
+        description: `Sản phẩm ${item.serial_number} đã được xóa khỏi hệ thống`
+      });
+
+      onSuccess();
+      onOpenChange(false);
+      resetForm();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      
+      // Hiển thị lỗi chi tiết hơn
+      let errorMessage = 'Không thể xóa sản phẩm';
+      if (error instanceof Error) {
+        if (error.message.includes('foreign key')) {
+          errorMessage = 'Không thể xóa sản phẩm vì còn dữ liệu liên quan';
+        } else if (error.message.includes('permission')) {
+          errorMessage = 'Bạn không có quyền xóa sản phẩm này';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast({
+        title: '❌ Lỗi',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setItem(null);
     setProductName('');
@@ -316,7 +385,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
                 onClick={() => setShowDeleteRequest(true)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Yêu Cầu Xóa
+                {permissions.isAdmin() ? 'Xóa Sản Phẩm' : 'Yêu Cầu Xóa'}
               </Button>
 
               <Button
@@ -344,16 +413,27 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
-                <h3 className="font-semibold text-red-900">Yêu Cầu Xóa Sản Phẩm</h3>
+                <h3 className="font-semibold text-red-900">
+                  {permissions.isAdmin() ? 'Xóa Sản Phẩm' : 'Yêu Cầu Xóa Sản Phẩm'}
+                </h3>
               </div>
               <p className="text-sm text-red-700 mb-4">
-                Bạn đang yêu cầu Admin xóa sản phẩm <strong>{serialNumber}</strong> khỏi hệ thống.
-                Vui lòng cung cấp lý do cụ thể.
+                {permissions.isAdmin() ? (
+                  <>
+                    Bạn đang xóa sản phẩm <strong>{serialNumber}</strong> khỏi hệ thống.
+                    Hành động này không thể hoàn tác. Vui lòng cung cấp lý do xóa.
+                  </>
+                ) : (
+                  <>
+                    Bạn đang yêu cầu Admin xóa sản phẩm <strong>{serialNumber}</strong> khỏi hệ thống.
+                    Vui lòng cung cấp lý do cụ thể.
+                  </>
+                )}
               </p>
 
               <div className="space-y-2">
                 <Label htmlFor="deleteReason" className="font-semibold text-red-900">
-                  Lý Do Yêu Cầu Xóa <span className="text-red-600">*</span>
+                  {permissions.isAdmin() ? 'Lý Do Xóa' : 'Lý Do Yêu Cầu Xóa'} <span className="text-red-600">*</span>
                 </Label>
                 <Textarea
                   id="deleteReason"
@@ -381,18 +461,18 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
                 type="button"
                 variant="destructive"
                 className="flex-1"
-                onClick={handleDeleteRequest}
+                onClick={permissions.isAdmin() ? handleDirectDelete : handleDeleteRequest}
                 disabled={loading || !deleteReason.trim()}
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang Gửi...
+                    {permissions.isAdmin() ? 'Đang Xóa...' : 'Đang Gửi...'}
                   </>
                 ) : (
                   <>
                     <AlertTriangle className="mr-2 h-4 w-4" />
-                    Gửi Yêu Cầu Xóa
+                    {permissions.isAdmin() ? 'Xóa Sản Phẩm' : 'Gửi Yêu Cầu Xóa'}
                   </>
                 )}
               </Button>

@@ -21,11 +21,19 @@ interface CheckedItem {
   checked_at: string;
 }
 
+interface ExpectedItem {
+  id: string;
+  serial_number: string;
+  product_name: string;
+  status: string;
+}
+
 const InventoryCheck = () => {
   const [checkingLocation, setCheckingLocation] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [checkedItems, setCheckedItems] = useState<CheckedItem[]>([]);
+  const [expectedItems, setExpectedItems] = useState<ExpectedItem[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -34,6 +42,8 @@ const InventoryCheck = () => {
   const totalChecked = checkedItems.length;
   const matchedCount = checkedItems.filter(item => item.is_match).length;
   const mismatchedCount = checkedItems.filter(item => !item.is_match).length;
+  const totalExpected = expectedItems.length;
+  const missingCount = totalExpected - matchedCount;
 
   const startCheckSession = async () => {
     if (!checkingLocation) {
@@ -47,6 +57,32 @@ const InventoryCheck = () => {
 
     setLoading(true);
     try {
+      // Load danh sách sản phẩm dự kiến tại vị trí này
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('inventory_items')
+        .select(`
+          id,
+          serial_number,
+          status,
+          sku_info:sku_id (
+            model_name
+          )
+        `)
+        .eq('location', checkingLocation)
+        .eq('status', 'AVAILABLE');
+
+      if (itemsError) throw itemsError;
+
+      const expectedList: ExpectedItem[] = (itemsData || []).map(item => ({
+        id: item.id,
+        serial_number: item.serial_number,
+        product_name: item.sku_info?.model_name || 'N/A',
+        status: item.status
+      }));
+
+      setExpectedItems(expectedList);
+
+      // Tạo session kiểm kho
       const { data, error } = await supabase
         .from('inventory_check_sessions')
         .insert({
@@ -65,7 +101,7 @@ const InventoryCheck = () => {
 
       toast({
         title: '✅ Bắt Đầu Kiểm Kho',
-        description: `Đang kiểm kho: ${getLocationDisplayName(checkingLocation)}`,
+        description: `Đang kiểm kho: ${getLocationDisplayName(checkingLocation)} - Có ${expectedList.length} sản phẩm cần kiểm`,
       });
     } catch (error) {
       console.error('Error starting check session:', error);
@@ -94,7 +130,7 @@ const InventoryCheck = () => {
 
     setLoading(true);
     try {
-      // Lấy thông tin sản phẩm từ database
+      // Lấy thông tin sản phẩm từ database - SỬ DỤNG .maybeSingle() ĐỂ AN TOÀN HƠN
       const { data: item, error: fetchError } = await supabase
         .from('inventory_items')
         .select(`
@@ -107,9 +143,15 @@ const InventoryCheck = () => {
           )
         `)
         .eq('serial_number', serialNumber)
-        .single();
+        .maybeSingle();
 
-      if (fetchError || !item) {
+      if (fetchError) {
+        // Log lỗi chi tiết để debug
+        console.error('Supabase fetch error:', fetchError);
+        throw fetchError;
+      }
+      
+      if (!item) {
         toast({
           title: '❌ Không Tìm Thấy',
           description: `Serial "${serialNumber}" không tồn tại trong hệ thống`,
@@ -154,16 +196,27 @@ const InventoryCheck = () => {
       // Show toast based on match/mismatch
       if (isMatch) {
         toast({
-          title: '✅ Khớp!',
-          description: `${productName} - Đúng vị trí`,
+          title: '✅ Khớp - Đúng Vị Trí!',
+          description: `${productName}\nSerial: ${serialNumber}`,
           className: 'bg-green-50 border-green-500'
         });
+        
+        // Vibration feedback cho khớp
+        if ('vibrate' in navigator) {
+          navigator.vibrate([100, 50, 100]); // 2 lần rung ngắn
+        }
       } else {
         toast({
-          title: '❌ Không Khớp!',
-          description: `${productName} - Đang ở ${getLocationDisplayName(item.location)}`,
-          variant: 'destructive'
+          title: '⚠️ SAI VỊ TRÍ!',
+          description: `${productName}\nSản phẩm thuộc: ${getLocationDisplayName(item.location)}\n⚠️ Vui lòng trả lại về đúng vị trí hoặc luân chuyển sản phẩm`,
+          variant: 'destructive',
+          duration: 5000 // Hiển thị lâu hơn cho sai vị trí
         });
+        
+        // Vibration feedback cho không khớp - rung dài hơn
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200, 100, 200]); // Rung 3 lần dài
+        }
       }
     } catch (error) {
       console.error('Error processing scan:', error);
@@ -182,6 +235,15 @@ const InventoryCheck = () => {
 
     setLoading(true);
     try {
+      // Tính toán kết quả chi tiết
+      const missingSummary = missingCount > 0 
+        ? `\n⚠️ CÒN THIẾU ${missingCount} SẢN PHẨM (có thể đã bán hoặc chưa quét)` 
+        : '';
+      
+      const mismatchSummary = mismatchedCount > 0
+        ? `\n⚠️ ${mismatchedCount} sản phẩm SAI VỊ TRÍ - cần luân chuyển`
+        : '';
+
       // Cập nhật session với kết quả
       const { error } = await supabase
         .from('inventory_check_sessions')
@@ -196,16 +258,32 @@ const InventoryCheck = () => {
 
       if (error) throw error;
 
+      // Hiển thị kết quả chi tiết
+      const resultMessage = `📊 Kết quả kiểm kho:\n` +
+        `• Tổng quét: ${totalChecked} sản phẩm\n` +
+        `• Dự kiến: ${totalExpected} sản phẩm\n` +
+        `• ✅ Khớp: ${matchedCount}\n` +
+        `• ❌ Sai vị trí: ${mismatchedCount}${missingSummary}${mismatchSummary}`;
+
       toast({
-        title: '✅ Hoàn Thành Kiểm Kho',
-        description: `Đã kiểm ${totalChecked} sản phẩm - Khớp: ${matchedCount} - Không khớp: ${mismatchedCount}`,
+        title: missingCount > 0 || mismatchedCount > 0 
+          ? '⚠️ Hoàn Thành - Có Vấn Đề!' 
+          : '✅ Hoàn Thành - Tất Cả Khớp!',
+        description: resultMessage,
+        duration: 8000,
+        variant: missingCount > 0 || mismatchedCount > 0 ? 'destructive' : 'default',
+        className: missingCount === 0 && mismatchedCount === 0 ? 'bg-green-50 border-green-500' : ''
       });
 
-      // Reset state
-      setSessionId(null);
-      setIsScanning(false);
-      setCheckingLocation('');
-      setCheckedItems([]);
+      // Reset state sau 2 giây để người dùng đọc kết quả
+      setTimeout(() => {
+        setSessionId(null);
+        setIsScanning(false);
+        setCheckingLocation('');
+        setCheckedItems([]);
+        setExpectedItems([]);
+      }, 2000);
+      
     } catch (error) {
       console.error('Error ending check session:', error);
       toast({
@@ -281,25 +359,33 @@ const InventoryCheck = () => {
         {/* Active Check Session */}
         {sessionId && (
           <>
-            {/* Statistics */}
-            <Card className="shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300">
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">{totalChecked}</div>
-                    <div className="text-sm text-slate-600 font-medium">Đã Quét</div>
+            {/* Statistics - Cải thiện hiển thị*/}
+            <Card className="shadow-lg bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-4 border-emerald-400">
+              <CardContent className="pt-4 pb-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                  <div className="text-center p-3 bg-white rounded-lg shadow-sm border-2 border-blue-200">
+                    <div className="text-2xl md:text-3xl font-bold text-blue-600">{totalExpected}</div>
+                    <div className="text-xs md:text-sm text-slate-600 font-medium">Dự Kiến</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600">{matchedCount}</div>
-                    <div className="text-sm text-slate-600 font-medium">Khớp</div>
+                  <div className="text-center p-3 bg-white rounded-lg shadow-sm border-2 border-indigo-200">
+                    <div className="text-2xl md:text-3xl font-bold text-indigo-600">{totalChecked}</div>
+                    <div className="text-xs md:text-sm text-slate-600 font-medium">Đã Quét</div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-600">{mismatchedCount}</div>
-                    <div className="text-sm text-slate-600 font-medium">Không Khớp</div>
+                  <div className="text-center p-3 bg-white rounded-lg shadow-sm border-2 border-green-200">
+                    <div className="text-2xl md:text-3xl font-bold text-green-600">{matchedCount}</div>
+                    <div className="text-xs md:text-sm text-slate-600 font-medium">✅ Khớp</div>
+                  </div>
+                  <div className="text-center p-3 bg-white rounded-lg shadow-sm border-2 border-red-200">
+                    <div className="text-2xl md:text-3xl font-bold text-red-600">{mismatchedCount}</div>
+                    <div className="text-xs md:text-sm text-slate-600 font-medium">❌ Sai VT</div>
+                  </div>
+                  <div className={`text-center p-3 bg-white rounded-lg shadow-sm border-2 ${missingCount > 0 ? 'border-amber-400 ring-2 ring-amber-300' : 'border-gray-200'}`}>
+                    <div className={`text-2xl md:text-3xl font-bold ${missingCount > 0 ? 'text-amber-600' : 'text-gray-600'}`}>{missingCount}</div>
+                    <div className="text-xs md:text-sm text-slate-600 font-medium">⚠️ Thiếu</div>
                   </div>
                 </div>
-                <div className="mt-4 text-center text-sm font-medium text-blue-800 border-t border-blue-200 pt-3">
-                  Đang Kiểm: <span className="font-bold">{getLocationDisplayName(checkingLocation)}</span>
+                <div className="mt-3 text-center text-sm md:text-base font-bold text-emerald-800 border-t-2 border-emerald-200 pt-3 bg-white/50 rounded-lg px-3 py-2">
+                  📍 Đang Kiểm: <span className="text-emerald-900">{getLocationDisplayName(checkingLocation)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -326,12 +412,37 @@ const InventoryCheck = () => {
               </CardContent>
             </Card>
 
+            {/* Danh sách sản phẩm còn thiếu */}
+            {missingCount > 0 && (
+              <Alert className="bg-amber-50 border-2 border-amber-400 shadow-lg">
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+                <AlertDescription className="text-amber-900">
+                  <div className="font-bold text-base mb-2">⚠️ CÒN THIẾU {missingCount} SẢN PHẨM CHƯA QUÉT:</div>
+                  <div className="space-y-1 text-sm max-h-40 overflow-y-auto">
+                    {expectedItems
+                      .filter(expected => !checkedItems.some(checked => checked.serial_number === expected.serial_number))
+                      .map((item, index) => (
+                        <div key={item.id} className="flex items-center gap-2 py-1 border-b border-amber-200 last:border-0">
+                          <span className="font-mono text-xs bg-amber-100 px-2 py-0.5 rounded">{index + 1}</span>
+                          <span className="font-medium">{item.product_name}</span>
+                          <span className="text-xs font-mono text-amber-700">({item.serial_number})</span>
+                        </div>
+                      ))
+                    }
+                  </div>
+                  <div className="mt-2 text-xs italic">
+                    💡 Các sản phẩm này có thể đã bán hoặc chưa được quét. Tiếp tục quét hoặc kết thúc để lưu kết quả.
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Checked Items List */}
-            <Card className="shadow-lg">
-              <CardHeader>
+            <Card className="shadow-lg border-2 border-emerald-300">
+              <CardHeader className="bg-emerald-50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Danh Sách Đã Quét ({checkedItems.length})</CardTitle>
+                    <CardTitle className="text-emerald-900">Danh Sách Đã Quét ({checkedItems.length})</CardTitle>
                     <CardDescription>Lịch sử các sản phẩm đã kiểm tra trong phiên này</CardDescription>
                   </div>
                   <Button
@@ -357,36 +468,40 @@ const InventoryCheck = () => {
                     {checkedItems.map((item, index) => (
                       <div
                         key={`${item.serial_number}-${index}`}
-                        className={`p-4 rounded-lg border-2 ${
+                        className={`p-4 rounded-lg border-2 shadow-md ${
                           item.is_match
-                            ? 'bg-green-50 border-green-300'
-                            : 'bg-red-50 border-red-300'
+                            ? 'bg-green-50 border-green-400'
+                            : 'bg-red-50 border-red-400 ring-2 ring-red-200'
                         }`}
                       >
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-2 mb-2">
                               {item.is_match ? (
-                                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                                <CheckCircle2 className="h-6 w-6 text-green-600 shrink-0" />
                               ) : (
-                                <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+                                <XCircle className="h-6 w-6 text-red-600 shrink-0" />
                               )}
-                              <span className={`font-bold ${item.is_match ? 'text-green-800' : 'text-red-800'}`}>
-                                {item.is_match ? 'Khớp' : 'Không Khớp'}
+                              <span className={`font-bold text-base ${item.is_match ? 'text-green-800' : 'text-red-800'}`}>
+                                {item.is_match ? '✅ Khớp - Đúng Vị Trí' : '⚠️ SAI VỊ TRÍ'}
                               </span>
                             </div>
-                            <div className="text-sm font-medium text-slate-900">{item.product_name}</div>
-                            <div className="text-xs font-mono text-slate-600 mt-1">{item.serial_number}</div>
+                            <div className="text-base font-bold text-slate-900 mb-1">{item.product_name}</div>
+                            <div className="text-sm font-mono text-slate-600 bg-white/60 px-2 py-1 rounded inline-block">
+                              {item.serial_number}
+                            </div>
                             {!item.is_match && (
-                              <div className="mt-2 text-xs">
-                                <span className="text-slate-600">Đang ở: </span>
-                                <span className="font-bold text-red-700">
-                                  {getLocationDisplayName(item.actual_location)}
-                                </span>
+                              <div className="mt-3 p-3 bg-red-100 border-2 border-red-300 rounded-lg">
+                                <div className="text-sm font-bold text-red-900 mb-1">
+                                  🚫 Sản phẩm thuộc: <span className="text-red-700 text-base">{getLocationDisplayName(item.actual_location)}</span>
+                                </div>
+                                <div className="text-xs text-red-800">
+                                  ⚠️ Vui lòng trả lại về đúng vị trí hoặc luân chuyển sản phẩm
+                                </div>
                               </div>
                             )}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 shrink-0">
                             {new Date(item.checked_at).toLocaleTimeString('vi-VN')}
                           </div>
                         </div>

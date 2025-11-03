@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Barcode from 'react-barcode';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Printer, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface BarcodeGeneratorProps {
   open: boolean;
@@ -18,6 +19,51 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
   productName = ''
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
+  const barcodeRef = useRef<SVGSVGElement>(null);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    // Chỉ chạy khi dialog mở và có serial number
+    if (open && serialNumber) {
+      // Thêm độ trễ để đảm bảo dialog CÓ THẬT trên DOM
+      const timeoutId = setTimeout(() => {
+        // Kiểm tra lại ref phòng trường hợp dialog đóng nhanh
+        if (!barcodeRef.current) {
+          console.warn("Barcode ref không tồn tại, bỏ qua vẽ.");
+          return;
+        }
+
+        try {
+          // Reset trạng thái cũ
+          barcodeRef.current.innerHTML = '';
+          setError('');
+
+          // JsBarcode(barcodeRef.current, serialNumber, {
+          //   format: "CODE128B", // ÉP BUỘC SỬ DỤNG BẢNG MÃ B
+          //   width: 2,
+          //   height: 60,
+          //   displayValue: true,
+          //   fontSize: 16,
+          //   margin: 10,
+          //   valid: function (valid) {
+          //     if (!valid) {
+          //       setError('Serial không hợp lệ cho mã vạch CODE128.');
+          //     }
+          //   }
+          // });
+        } catch (e: any) {
+          console.error("Lỗi jsbarcode:", e.message);
+          setError(e.message);
+        }
+      }, 150); // Tăng độ trễ lên 150ms để đảm bảo thành công
+
+      // Cleanup function
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Reset khi dialog đóng
+      setError('');
+    }
+  }, [open, serialNumber]);
 
   const handlePrint = () => {
     const printContent = printRef.current;
@@ -86,44 +132,25 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
   };
 
   const handleDownloadImage = () => {
-    const svg = printRef.current?.querySelector('svg');
-    if (!svg) return;
+    const container = printRef.current;
+    if (!container) return;
 
-    // Convert SVG to canvas
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
-    
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height + 60; // Extra space for text
-      
-      // White background
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw product name if exists
-      if (productName) {
-        ctx.fillStyle = 'black';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(productName, canvas.width / 2, 20);
+    html2canvas(container, {
+      scale: 3, // Tăng độ phân giải ảnh
+      backgroundColor: null, // Giữ nền trong suốt nếu có
+      onclone: (document) => {
+        // Xóa viền dashed khi chụp ảnh
+        const clonedContainer = document.querySelector('.barcode-container') as HTMLElement;
+        if (clonedContainer) {
+          clonedContainer.style.border = 'none';
+        }
       }
-      
-      // Draw barcode
-      ctx.drawImage(img, 0, 30);
-      
-      // Download
+    }).then(canvas => {
       const link = document.createElement('a');
       link.download = `barcode-${serialNumber}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-    };
-    
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    });
   };
 
   return (
@@ -144,41 +171,24 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
             style={{ width: '100%', maxWidth: '350px', margin: '0 auto' }}
           >
             {productName && (
-              <div className="product-name text-xs font-bold text-slate-800 mb-2 px-2 leading-tight" style={{ 
-                height: '32px', 
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical' as const,
-                wordBreak: 'break-word'
-              }}>
+              <div 
+                className="product-name text-sm font-bold text-slate-800 mb-2 px-2" 
+                style={{ wordBreak: 'break-word', lineHeight: '1.4' }}
+              >
                 {productName}
               </div>
             )}
             
             <div className="flex justify-center items-center pb-2">
-              <div className="inline-block" style={{ maxWidth: '100%', overflow: 'hidden' }}>
-                <Barcode 
-                  value={serialNumber}
-                  format="CODE128"
-                  width={1.2}
-                  height={45}
-                  displayValue={true}
-                  fontSize={10}
-                  margin={3}
-                />
-              </div>
-            </div>
-            
-            <div className="serial-text text-xs font-mono text-slate-600 mt-1 px-2 leading-tight" style={{
-              height: '24px',
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical' as const,
-              wordBreak: 'break-all'
-            }}>
-              {serialNumber}
+              <Barcode 
+                value={serialNumber}
+                format="CODE128" // Chuẩn CODE128
+                width={1.5}
+                height={60}
+                displayValue={true}
+                fontSize={16}
+                margin={10}
+              />
             </div>
           </div>
 
