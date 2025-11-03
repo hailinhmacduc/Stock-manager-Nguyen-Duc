@@ -6,7 +6,7 @@ NODE_VERSION = "18"
 
 [phases.install]
 cmds = [
-  "npm install --include=optional"
+  "npm ci"
 ]
 
 [phases.build]
