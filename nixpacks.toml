@@ -1,6 +1,6 @@
 [phases.install]
 cmds = [
-  "npm install --no-frozen-lockfile"
+  "npm ci"
 ]
 
 [phases.build]
