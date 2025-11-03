@@ -1,0 +1,12 @@
+[phases.install]
+cmds = [
+  "npm install --no-frozen-lockfile"
+]
+
+[phases.build]
+cmds = [
+  "npm run build"
+]
+
+[start]
+cmd = "npm run preview"
