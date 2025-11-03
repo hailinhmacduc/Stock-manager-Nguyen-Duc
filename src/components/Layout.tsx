@@ -37,20 +37,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <nav className="border-b bg-white shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <nav className="border-b bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-2 md:px-4">
-          <div className="flex h-14 md:h-16 items-center justify-between">
+          <div className="flex h-16 md:h-20 items-center justify-between">
             <div className="flex items-center gap-2 md:gap-6">
-              <Link to="/dashboard" className="flex items-center gap-1 md:gap-2 hover:opacity-80 transition-opacity">
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-1.5 md:p-2 rounded-lg shadow-md">
-                  <Laptop className="h-4 w-4 md:h-5 md:w-5 text-white" />
+              <Link to="/dashboard" className="flex items-center gap-2 md:gap-3 hover:scale-105 transition-transform duration-200">
+                <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-2 md:p-3 rounded-xl shadow-lg">
+                  <Laptop className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
                 <div className="hidden sm:block">
-                  <span className="font-bold text-base md:text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="font-bold text-lg md:text-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                     Quản Lý Tồn Kho
                   </span>
-                  <p className="text-xs text-muted-foreground">Laptop Store</p>
+                  <p className="text-xs text-muted-foreground font-medium">💻 Laptop Store System</p>
                 </div>
               </Link>
               <div className="flex gap-1 md:gap-2 overflow-x-auto">
@@ -58,10 +58,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <Button
                     variant={isActive('/dashboard') ? 'default' : 'ghost'}
                     size="sm"
-                    className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
+                    className={`gap-1 md:gap-2 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
+                      isActive('/dashboard') 
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl' 
+                        : 'hover:bg-blue-50'
+                    }`}
                   >
-                    <BarChart3 className="h-3 w-3 md:h-4 md:w-4" />
-                    <span className="hidden sm:inline">Tổng Quan</span>
+                    <BarChart3 className="h-4 w-4 md:h-4 md:w-4" />
+                    <span className="hidden sm:inline">📊 Tổng Quan</span>
                   </Button>
                 </Link>
                 {permissions.canViewInventory() && (
@@ -69,10 +73,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Button
                       variant={isActive('/inventory') ? 'default' : 'ghost'}
                       size="sm"
-                      className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
+                      className={`gap-1 md:gap-2 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
+                        isActive('/inventory') 
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg hover:shadow-xl' 
+                          : 'hover:bg-emerald-50'
+                      }`}
                     >
-                      <Package className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Kho Hàng</span>
+                      <Package className="h-4 w-4 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">📦 Kho Hàng</span>
                     </Button>
                   </Link>
                 )}
@@ -81,10 +89,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Button
                       variant={isActive('/move') ? 'default' : 'ghost'}
                       size="sm"
-                      className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
+                      className={`gap-1 md:gap-2 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
+                        isActive('/move') 
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl' 
+                          : 'hover:bg-purple-50'
+                      }`}
                     >
-                      <Move className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Luân Chuyển</span>
+                      <Move className="h-4 w-4 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">🔄 Luân Chuyển</span>
                     </Button>
                   </Link>
                 )}
@@ -93,10 +105,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Button
                       variant={isActive('/inventory-check') ? 'default' : 'ghost'}
                       size="sm"
-                      className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
+                      className={`gap-1 md:gap-2 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
+                        isActive('/inventory-check') 
+                          ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:shadow-xl' 
+                          : 'hover:bg-cyan-50'
+                      }`}
                     >
-                      <ClipboardCheck className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Kiểm Kho</span>
+                      <ClipboardCheck className="h-4 w-4 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">✅ Kiểm Kho</span>
                     </Button>
                   </Link>
                 )}
@@ -105,12 +121,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Button
                       variant={isActive('/reports') ? 'default' : 'ghost'}
                       size="sm"
-                      className="gap-1 md:gap-2 relative text-xs md:text-sm px-2 md:px-3"
+                      className={`gap-1 md:gap-2 relative text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
+                        isActive('/reports') 
+                          ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg hover:shadow-xl' 
+                          : 'hover:bg-orange-50'
+                      }`}
                     >
-                      <AlertCircle className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Báo Cáo Lỗi</span>
+                      <AlertCircle className="h-4 w-4 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">⚠️ Báo Cáo</span>
                       {pendingReportsCount > 0 && (
-                        <Badge className="bg-red-500 text-white text-xs px-1 py-0 min-w-[16px] h-4 md:min-w-[20px] md:h-5">
+                        <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 animate-pulse shadow-lg">
                           {pendingReportsCount}
                         </Badge>
                       )}
@@ -122,32 +142,44 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Button
                       variant={isActive('/users') ? 'default' : 'ghost'}
                       size="sm"
-                      className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3"
+                      className={`gap-1 md:gap-2 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
+                        isActive('/users') 
+                          ? 'bg-gradient-to-r from-slate-700 to-slate-900 text-white shadow-lg hover:shadow-xl' 
+                          : 'hover:bg-slate-50'
+                      }`}
                     >
-                      <Users className="h-3 w-3 md:h-4 md:w-4" />
-                      <span className="hidden sm:inline">Users</span>
+                      <Users className="h-4 w-4 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">👥 Users</span>
                     </Button>
                   </Link>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 md:gap-4">
-              <div className="text-right hidden md:block">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="text-right hidden md:block bg-gradient-to-r from-slate-50 to-blue-50 px-4 py-2 rounded-xl border-2 border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 justify-end">
-                  <p className="text-xs md:text-sm font-medium">{user?.full_name}</p>
+                  <p className="text-sm font-bold text-slate-800">{user?.full_name}</p>
                   {getUserRoleBadge()}
                 </div>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
+                <p className="text-xs text-muted-foreground">✉️ {user?.email}</p>
               </div>
-              <Button onClick={logout} variant="ghost" size="sm" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
-                <LogOut className="h-3 w-3 md:h-4 md:w-4" />
-                <span className="hidden sm:inline">Đăng Xuất</span>
+              <Button 
+                onClick={logout} 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 text-xs md:text-sm px-3 md:px-4 py-2 md:py-2.5 font-medium hover:bg-red-50 hover:text-red-600 transition-all duration-200 border-2 border-transparent hover:border-red-200"
+              >
+                <LogOut className="h-4 w-4 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">🚪 Đăng Xuất</span>
               </Button>
             </div>
           </div>
         </div>
       </nav>
-      <main className="container mx-auto px-2 md:px-4 py-4 md:py-8">{children}</main>
+      <main className="container mx-auto px-2 md:px-4 py-6 md:py-10">{children}</main>
+      
+      {/* Decorative Elements */}
+      <div className="fixed bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-emerald-500 to-purple-500 opacity-50"></div>
     </div>
   );
 };

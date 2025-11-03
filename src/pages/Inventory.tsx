@@ -213,85 +213,96 @@ const Inventory = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Kho Hàng Chi Tiết
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Theo dõi từng máy laptop cụ thể theo số serial
-            </p>
+        {/* Enhanced Header */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-8 text-white shadow-2xl">
+          <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+                <Package className="h-10 w-10" />
+                Kho Hàng Chi Tiết
+              </h1>
+              <p className="text-emerald-100 text-lg">
+                Theo dõi từng máy laptop cụ thể theo số serial
+              </p>
+            </div>
+            {permissions.canAddItems() && (
+              <Button 
+                onClick={() => setAddDialogOpen(true)} 
+                className="gap-2 bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                size="lg"
+              >
+                <Plus className="h-5 w-5" />
+                Thêm Sản Phẩm
+              </Button>
+            )}
           </div>
-          {permissions.canAddItems() && (
-            <Button onClick={() => setAddDialogOpen(true)} className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-              <Plus className="h-4 w-4" />
-              Thêm Sản Phẩm
-            </Button>
-          )}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
         </div>
 
-        {/* Search and Filters - Compact */}
-        <Card className="shadow-sm">
-          <CardContent className="pt-4">
+        {/* Search and Filters - Enhanced */}
+        <Card className="shadow-lg border-2">
+          <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-3">
               {/* Search Bar */}
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
                 <Input
-                  placeholder="Tìm kiếm theo serial, tên sản phẩm, nhà cung cấp..."
+                  placeholder="🔍 Tìm kiếm theo serial, tên sản phẩm, nhà cung cấp..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-8 h-9"
+                  className="pl-11 pr-10 h-12 border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-base"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-6 w-6 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 )}
               </div>
               
-              {/* Compact Filters */}
+              {/* Enhanced Filters */}
               <div className="flex gap-2">
                 <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="w-[140px] h-9">
-                    <Filter className="h-3 w-3 mr-1" />
+                  <SelectTrigger className="w-[160px] h-12 border-2 border-slate-200 font-medium">
+                    <Filter className="h-4 w-4 mr-2 text-purple-600" />
                     <SelectValue placeholder="Vị trí" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="All">Tất Cả Vị Trí</SelectItem>
-                    <SelectItem value="DISPLAY_T1">Kệ T1</SelectItem>
-                    <SelectItem value="STORAGE_T1">Tủ T1</SelectItem>
-                    <SelectItem value="WAREHOUSE_T3">Kho T3</SelectItem>
+                    <SelectItem value="All">📍 Tất Cả Vị Trí</SelectItem>
+                    <SelectItem value="DISPLAY_T1">🏪 Kệ T1</SelectItem>
+                    <SelectItem value="STORAGE_T1">📦 Tủ T1</SelectItem>
+                    <SelectItem value="WAREHOUSE_T3">🏭 Kho T3</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[130px] h-9">
+                  <SelectTrigger className="w-[150px] h-12 border-2 border-slate-200 font-medium">
                     <SelectValue placeholder="Trạng thái" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="All">Tất Cả</SelectItem>
-                    <SelectItem value="AVAILABLE">Sẵn Sàng</SelectItem>
-                    <SelectItem value="SOLD">Đã Bán</SelectItem>
-                    <SelectItem value="HOLD">Đang Giữ</SelectItem>
-                    <SelectItem value="DEFECT">Lỗi</SelectItem>
+                    <SelectItem value="All">📊 Tất Cả</SelectItem>
+                    <SelectItem value="AVAILABLE">✅ Sẵn Sàng</SelectItem>
+                    <SelectItem value="SOLD">💰 Đã Bán</SelectItem>
+                    <SelectItem value="HOLD">⏸️ Đang Giữ</SelectItem>
+                    <SelectItem value="DEFECT">⚠️ Lỗi</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {/* Condition Filter */}
                 <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                  <SelectTrigger className="w-[140px] h-9">
+                  <SelectTrigger className="w-[160px] h-12 border-2 border-slate-200 font-medium">
                     <SelectValue placeholder="Tình trạng" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="All">Tất Cả</SelectItem>
-                    <SelectItem value="NEW_SEAL">New Box</SelectItem>
-                    <SelectItem value="OPEN_BOX">Open Box</SelectItem>
-                    <SelectItem value="USED">Máy Cũ</SelectItem>
-                    <SelectItem value="REPAIRING">Đang Sửa/Đóng Lại</SelectItem>
+                    <SelectItem value="All">📋 Tất Cả</SelectItem>
+                    <SelectItem value="NEW_SEAL">🆕 New Box</SelectItem>
+                    <SelectItem value="OPEN_BOX">📦 Open Box</SelectItem>
+                    <SelectItem value="USED">🔧 Máy Cũ</SelectItem>
+                    <SelectItem value="REPAIRING">🛠️ Đang Sửa</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -299,50 +310,59 @@ const Inventory = () => {
           </CardContent>
         </Card>
 
-        {/* Inventory Statistics */}
-        <Card className="shadow-sm bg-gradient-to-r from-emerald-50 to-blue-50 border-emerald-200">
-          <CardContent className="pt-4 pb-3">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-emerald-600">{stats.availableCount}</div>
-                <div className="text-sm text-slate-600 font-medium">Đang Tồn Kho</div>
+        {/* Inventory Statistics - Enhanced */}
+        <Card className="shadow-lg bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300">
+          <CardContent className="pt-6 pb-5">
+            <div className="grid grid-cols-2 gap-8">
+              <div className="text-center p-4 bg-white rounded-xl shadow-sm border-2 border-emerald-200">
+                <div className="text-5xl font-bold text-emerald-600 mb-1">{stats.availableCount}</div>
+                <div className="text-sm text-slate-600 font-semibold flex items-center justify-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Đang Tồn Kho
+                </div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-600">{stats.soldCount}</div>
-                <div className="text-sm text-slate-600 font-medium">Đã Bán</div>
+              <div className="text-center p-4 bg-white rounded-xl shadow-sm border-2 border-slate-200">
+                <div className="text-4xl font-bold text-slate-600 mb-1">{stats.soldCount}</div>
+                <div className="text-sm text-slate-600 font-semibold flex items-center justify-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Đã Bán
+                </div>
               </div>
             </div>
             {(searchQuery || locationFilter !== 'All' || statusFilter !== 'All' || conditionFilter !== 'All') && (
-              <div className="mt-3 pt-3 border-t border-emerald-200">
-                <div className="text-xs text-slate-600 text-center">
-                  <span className="font-medium text-emerald-700">{stats.availableCount} sản phẩm đang tồn</span>
-                  {searchQuery && <span> • Tìm kiếm: "{searchQuery}"</span>}
-                  {locationFilter !== 'All' && <span> • Vị trí: {getLocationDisplayName(locationFilter)}</span>}
-                  {statusFilter !== 'All' && <span> • Trạng thái: {getStatusDisplayName(statusFilter)}</span>}
-                  {conditionFilter !== 'All' && <span> • Tình trạng: {getConditionDisplayName(conditionFilter)}</span>}
+              <div className="mt-4 pt-4 border-t-2 border-emerald-200">
+                <div className="text-sm text-slate-700 text-center bg-white py-2 px-4 rounded-lg">
+                  <span className="font-bold text-emerald-700">{stats.availableCount} sản phẩm đang tồn</span>
+                  {searchQuery && <span className="ml-2">• 🔍 "{searchQuery}"</span>}
+                  {locationFilter !== 'All' && <span className="ml-2">• 📍 {getLocationDisplayName(locationFilter)}</span>}
+                  {statusFilter !== 'All' && <span className="ml-2">• 📊 {getStatusDisplayName(statusFilter)}</span>}
+                  {conditionFilter !== 'All' && <span className="ml-2">• 📋 {getConditionDisplayName(conditionFilter)}</span>}
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg">
-          <CardHeader className="pb-3">
+        <Card className="shadow-2xl border-2">
+          <CardHeader className="pb-4 bg-gradient-to-r from-slate-50 to-blue-50 border-b-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Danh Sách Sản Phẩm</CardTitle>
-                <CardDescription className="mt-1">
-                  Hiển thị {filteredData.length} / {data.length} sản phẩm
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <Package className="h-6 w-6 text-emerald-600" />
+                  Danh Sách Sản Phẩm
+                </CardTitle>
+                <CardDescription className="mt-2 text-base">
+                  📊 Hiển thị <span className="font-bold text-emerald-600">{filteredData.length}</span> / {data.length} sản phẩm
                 </CardDescription>
               </div>
-              <div className="flex gap-2 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-emerald-100 border border-emerald-300 rounded"></div>
-                  <span>Sẵn hàng</span>
+              <div className="flex gap-3 text-sm">
+                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-sm"></div>
+                  <span className="font-medium">Sẵn hàng</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                  <span>Đã bán</span>
+                <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                  <div className="w-3 h-3 bg-gray-400 rounded-full shadow-sm"></div>
+                  <span className="font-medium">Đã bán</span>
                 </div>
               </div>
             </div>
