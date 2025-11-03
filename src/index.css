@@ -2,85 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global Font Size Optimization */
+/* Global Font Size Optimization - Enhanced for Mobile */
 @layer base {
   html {
-    font-size: 14px;
+    font-size: 16px; /* Increased for better mobile readability */
   }
   
   @media (max-width: 768px) {
     html {
-      font-size: 13px;
+      font-size: 15px; /* Increased from 13px to 15px */
     }
   }
   
   body {
-    @apply text-sm;
+    @apply text-base; /* Changed from text-sm to text-base */
   }
   
   h1 {
-    @apply text-xl md:text-2xl;
+    @apply text-2xl md:text-3xl; /* Increased size */
   }
   
   h2 {
-    @apply text-lg md:text-xl;
+    @apply text-xl md:text-2xl; /* Increased size */
   }
   
   h3 {
-    @apply text-base md:text-lg;
+    @apply text-lg md:text-xl; /* Increased size */
   }
 }
 
-/* Responsive Table Optimization */
+/* Responsive Table Optimization - Enhanced for Mobile */
 @layer components {
   .responsive-table {
     @apply w-full overflow-x-auto;
   }
   
   .responsive-table table {
-    @apply min-w-full text-xs md:text-sm;
+    @apply min-w-full text-sm md:text-base; /* Increased from text-xs to text-sm */
   }
   
   .responsive-table th,
   .responsive-table td {
-    @apply px-2 py-1.5 md:px-3 md:py-2;
+    @apply px-3 py-2 md:px-4 md:py-3; /* Increased padding */
   }
   
   /* Mobile Table Optimization */
   @media (max-width: 768px) {
     .responsive-table table {
-      min-width: 600px; /* Ensure minimum width for horizontal scroll */
+      min-width: 100%; /* Allow full width on mobile */
     }
     
-    /* Make product name column wider on mobile */
+    /* Make product name column prominently visible */
     .responsive-table th:nth-child(2),
     .responsive-table td:nth-child(2) {
-      min-width: 200px;
-      max-width: 250px;
+      min-width: 240px; /* Increased for better visibility */
+      font-size: 0.95rem; /* Larger font for product names */
+      font-weight: 600; /* Bold product names */
     }
     
-    /* Compact other columns */
+    /* Compact but readable other columns */
     .responsive-table th:not(:nth-child(2)),
     .responsive-table td:not(:nth-child(2)) {
       white-space: nowrap;
+      font-size: 0.85rem; /* Larger than before */
+    }
+    
+    /* Serial number column */
+    .responsive-table th:nth-child(1),
+    .responsive-table td:nth-child(1) {
+      min-width: 140px;
+      font-size: 0.8rem;
     }
   }
   
   /* Compact Cards on Mobile */
   .compact-card {
-    @apply p-3 md:p-4;
+    @apply p-4 md:p-6; /* Increased padding */
   }
   
   .compact-card-header {
-    @apply pb-1 md:pb-2;
+    @apply pb-2 md:pb-3;
   }
   
   .compact-card-title {
-    @apply text-base md:text-lg;
+    @apply text-lg md:text-xl; /* Increased size */
   }
   
   .compact-card-description {
-    @apply text-xs md:text-sm;
+    @apply text-sm md:text-base; /* Increased size */
+  }
+  
+  /* Mobile-optimized spacing */
+  .mobile-compact {
+    @apply space-y-3 md:space-y-6;
+  }
+  
+  /* Mobile header optimization */
+  .mobile-header {
+    @apply p-4 md:p-8;
+  }
+  
+  .mobile-header h1 {
+    @apply text-xl md:text-4xl;
+  }
+  
+  .mobile-header p {
+    @apply text-sm md:text-lg;
   }
 }
 

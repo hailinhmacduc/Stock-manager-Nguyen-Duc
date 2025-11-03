@@ -212,28 +212,29 @@ const Inventory = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Enhanced Header */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 p-8 text-white shadow-2xl">
+      <div className="mobile-compact space-y-3 md:space-y-6">
+        {/* Enhanced Header - Mobile Optimized */}
+        <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 mobile-header text-white shadow-2xl">
           <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
-          <div className="relative flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-                <Package className="h-10 w-10" />
-                Kho Hàng Chi Tiết
+          <div className="relative flex items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl md:text-4xl font-bold mb-1 md:mb-2 flex items-center gap-2 md:gap-3">
+                <Package className="h-6 w-6 md:h-10 md:w-10 flex-shrink-0" />
+                <span className="truncate">Kho Hàng Chi Tiết</span>
               </h1>
-              <p className="text-emerald-100 text-lg">
+              <p className="text-emerald-100 text-xs md:text-lg hidden md:block">
                 Theo dõi từng máy laptop cụ thể theo số serial
               </p>
             </div>
             {permissions.canAddItems() && (
               <Button 
                 onClick={() => setAddDialogOpen(true)} 
-                className="gap-2 bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                size="lg"
+                className="gap-1 md:gap-2 bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex-shrink-0 text-xs md:text-base h-8 md:h-10 px-2 md:px-4"
+                size="sm"
               >
-                <Plus className="h-5 w-5" />
-                Thêm Sản Phẩm
+                <Plus className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="hidden sm:inline">Thêm Sản Phẩm</span>
+                <span className="sm:hidden">Thêm</span>
               </Button>
             )}
           </div>
@@ -241,38 +242,38 @@ const Inventory = () => {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
         </div>
 
-        {/* Search and Filters - Enhanced */}
+        {/* Search and Filters - Mobile Optimized */}
         <Card className="shadow-lg border-2">
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-3">
+          <CardContent className="pt-3 md:pt-6 pb-3 md:pb-6">
+            <div className="space-y-2 md:space-y-0 md:flex md:flex-row md:gap-3">
               {/* Search Bar */}
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
                 <Input
-                  placeholder="🔍 Tìm kiếm theo serial, tên sản phẩm, nhà cung cấp..."
+                  placeholder="🔍 Tìm kiếm theo serial, tên sản phẩm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-11 pr-10 h-12 border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-base"
+                  className="pl-10 md:pl-11 pr-10 h-10 md:h-12 border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm md:text-base"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-6 w-6 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3 md:h-4 md:w-4" />
                   </button>
                 )}
               </div>
               
-              {/* Enhanced Filters */}
-              <div className="flex gap-2">
+              {/* Enhanced Filters - Responsive Grid */}
+              <div className="grid grid-cols-3 gap-1.5 md:flex md:gap-2">
                 <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="w-[160px] h-12 border-2 border-slate-200 font-medium">
-                    <Filter className="h-4 w-4 mr-2 text-purple-600" />
+                  <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
+                    <Filter className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-purple-600" />
                     <SelectValue placeholder="Vị trí" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="All">📍 Tất Cả Vị Trí</SelectItem>
+                    <SelectItem value="All">📍 Tất Cả</SelectItem>
                     <SelectItem value="DISPLAY_T1">🏪 Kệ T1</SelectItem>
                     <SelectItem value="STORAGE_T1">📦 Tủ T1</SelectItem>
                     <SelectItem value="WAREHOUSE_T3">🏭 Kho T3</SelectItem>
@@ -280,29 +281,29 @@ const Inventory = () => {
                 </Select>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[150px] h-12 border-2 border-slate-200 font-medium">
+                  <SelectTrigger className="w-full md:w-[130px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
                     <SelectValue placeholder="Trạng thái" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">📊 Tất Cả</SelectItem>
-                    <SelectItem value="AVAILABLE">✅ Sẵn Sàng</SelectItem>
-                    <SelectItem value="SOLD">💰 Đã Bán</SelectItem>
-                    <SelectItem value="HOLD">⏸️ Đang Giữ</SelectItem>
+                    <SelectItem value="AVAILABLE">✅ Sẵn</SelectItem>
+                    <SelectItem value="SOLD">💰 Bán</SelectItem>
+                    <SelectItem value="HOLD">⏸️ Giữ</SelectItem>
                     <SelectItem value="DEFECT">⚠️ Lỗi</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {/* Condition Filter */}
                 <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                  <SelectTrigger className="w-[160px] h-12 border-2 border-slate-200 font-medium">
+                  <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
                     <SelectValue placeholder="Tình trạng" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">📋 Tất Cả</SelectItem>
-                    <SelectItem value="NEW_SEAL">🆕 New Box</SelectItem>
-                    <SelectItem value="OPEN_BOX">📦 Open Box</SelectItem>
-                    <SelectItem value="USED">🔧 Máy Cũ</SelectItem>
-                    <SelectItem value="REPAIRING">🛠️ Đang Sửa</SelectItem>
+                    <SelectItem value="NEW_SEAL">🆕 New</SelectItem>
+                    <SelectItem value="OPEN_BOX">📦 Open</SelectItem>
+                    <SelectItem value="USED">🔧 Cũ</SelectItem>
+                    <SelectItem value="REPAIRING">🛠️ Sửa</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -310,58 +311,59 @@ const Inventory = () => {
           </CardContent>
         </Card>
 
-        {/* Inventory Statistics - Enhanced */}
+        {/* Inventory Statistics - Mobile Optimized & Compact */}
         <Card className="shadow-lg bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300">
-          <CardContent className="pt-6 pb-5">
-            <div className="grid grid-cols-2 gap-8">
-              <div className="text-center p-4 bg-white rounded-xl shadow-sm border-2 border-emerald-200">
-                <div className="text-5xl font-bold text-emerald-600 mb-1">{stats.availableCount}</div>
-                <div className="text-sm text-slate-600 font-semibold flex items-center justify-center gap-2">
-                  <Package className="h-4 w-4" />
+          <CardContent className="pt-3 pb-3 md:pt-5 md:pb-4">
+            <div className="grid grid-cols-2 gap-3 md:gap-6">
+              <div className="text-center p-2.5 md:p-4 bg-white rounded-lg md:rounded-xl shadow-sm border-2 border-emerald-200">
+                <div className="text-3xl md:text-5xl font-bold text-emerald-600 mb-0.5 md:mb-1">{stats.availableCount}</div>
+                <div className="text-xs md:text-sm text-slate-600 font-semibold flex items-center justify-center gap-1 md:gap-2">
+                  <Package className="h-3 w-3 md:h-4 md:w-4" />
                   Đang Tồn Kho
                 </div>
               </div>
-              <div className="text-center p-4 bg-white rounded-xl shadow-sm border-2 border-slate-200">
-                <div className="text-4xl font-bold text-slate-600 mb-1">{stats.soldCount}</div>
-                <div className="text-sm text-slate-600 font-semibold flex items-center justify-center gap-2">
-                  <Package className="h-4 w-4" />
+              <div className="text-center p-2.5 md:p-4 bg-white rounded-lg md:rounded-xl shadow-sm border-2 border-slate-200">
+                <div className="text-2xl md:text-4xl font-bold text-slate-600 mb-0.5 md:mb-1">{stats.soldCount}</div>
+                <div className="text-xs md:text-sm text-slate-600 font-semibold flex items-center justify-center gap-1 md:gap-2">
+                  <Package className="h-3 w-3 md:h-4 md:w-4" />
                   Đã Bán
                 </div>
               </div>
             </div>
             {(searchQuery || locationFilter !== 'All' || statusFilter !== 'All' || conditionFilter !== 'All') && (
-              <div className="mt-4 pt-4 border-t-2 border-emerald-200">
-                <div className="text-sm text-slate-700 text-center bg-white py-2 px-4 rounded-lg">
+              <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t-2 border-emerald-200">
+                <div className="text-xs md:text-sm text-slate-700 text-center bg-white py-1.5 md:py-2 px-3 md:px-4 rounded-lg">
                   <span className="font-bold text-emerald-700">{stats.availableCount} sản phẩm đang tồn</span>
-                  {searchQuery && <span className="ml-2">• 🔍 "{searchQuery}"</span>}
-                  {locationFilter !== 'All' && <span className="ml-2">• 📍 {getLocationDisplayName(locationFilter)}</span>}
-                  {statusFilter !== 'All' && <span className="ml-2">• 📊 {getStatusDisplayName(statusFilter)}</span>}
-                  {conditionFilter !== 'All' && <span className="ml-2">• 📋 {getConditionDisplayName(conditionFilter)}</span>}
+                  {searchQuery && <span className="ml-1 md:ml-2">• 🔍 "{searchQuery}"</span>}
+                  {locationFilter !== 'All' && <span className="ml-1 md:ml-2">• 📍 {getLocationDisplayName(locationFilter)}</span>}
+                  {statusFilter !== 'All' && <span className="ml-1 md:ml-2">• 📊 {getStatusDisplayName(statusFilter)}</span>}
+                  {conditionFilter !== 'All' && <span className="ml-1 md:ml-2">• 📋 {getConditionDisplayName(conditionFilter)}</span>}
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-2xl border-2">
-          <CardHeader className="pb-4 bg-gradient-to-r from-slate-50 to-blue-50 border-b-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Package className="h-6 w-6 text-emerald-600" />
-                  Danh Sách Sản Phẩm
+        {/* DANH SÁCH SẢN PHẨM - Phần Quan Trọng Nhất - Nổi Bật */}
+        <Card className="shadow-2xl border-4 border-emerald-400 ring-2 ring-emerald-200">
+          <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-emerald-100 via-teal-100 to-cyan-100 border-b-4 border-emerald-300 p-3 md:p-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-lg md:text-2xl flex items-center gap-2 text-emerald-800">
+                  <Package className="h-5 w-5 md:h-6 md:w-6 text-emerald-700 flex-shrink-0" />
+                  <span className="font-extrabold">Danh Sách Sản Phẩm</span>
                 </CardTitle>
-                <CardDescription className="mt-2 text-base">
-                  📊 Hiển thị <span className="font-bold text-emerald-600">{filteredData.length}</span> / {data.length} sản phẩm
+                <CardDescription className="mt-1 md:mt-2 text-sm md:text-base text-emerald-900">
+                  📊 Hiển thị <span className="font-bold text-emerald-700 text-base md:text-lg">{filteredData.length}</span> / {data.length} sản phẩm
                 </CardDescription>
               </div>
-              <div className="flex gap-3 text-sm">
-                <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-sm"></div>
+              <div className="hidden md:flex gap-2 md:gap-3 text-xs md:text-sm flex-shrink-0">
+                <div className="flex items-center gap-1.5 md:gap-2 bg-emerald-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border-2 border-emerald-300">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-500 rounded-full shadow-sm"></div>
                   <span className="font-medium">Sẵn hàng</span>
                 </div>
-                <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
-                  <div className="w-3 h-3 bg-gray-400 rounded-full shadow-sm"></div>
+                <div className="flex items-center gap-1.5 md:gap-2 bg-gray-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border-2 border-gray-300">
+                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-gray-400 rounded-full shadow-sm"></div>
                   <span className="font-medium">Đã bán</span>
                 </div>
               </div>
@@ -403,52 +405,51 @@ const Inventory = () => {
               <div className="responsive-table">
                 <table className="w-full min-w-full">
                   <thead>
-                    <tr className="border-b bg-gradient-to-r from-slate-100 to-slate-50">
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm w-[100px] md:w-auto">Serial/ Service Tag</th>
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm min-w-[200px] md:min-w-0">Tên Sản Phẩm</th>
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm w-[80px] md:w-auto">Vị Trí</th>
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm w-[80px] md:w-auto">Tình Trạng</th>
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm w-[80px] md:w-auto">Trạng Thái</th>
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm w-[90px] md:w-auto">Ngày Nhập</th>
-                      <th className="text-left p-2 md:p-3 font-semibold text-slate-700 text-xs md:text-sm w-[120px] md:w-auto">Hành Động</th>
+                    <tr className="border-b-2 bg-gradient-to-r from-emerald-100 to-teal-100">
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[110px] md:w-auto bg-emerald-50/50">Serial/ Service Tag</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-sm md:text-base min-w-[220px] md:min-w-0 bg-emerald-100/70">Tên Sản Phẩm</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[85px] md:w-auto">Vị Trí</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[85px] md:w-auto">Tình Trạng</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[85px] md:w-auto">Trạng Thái</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[90px] md:w-auto">Ngày Nhập</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[130px] md:w-auto">Hành Động</th>
                     </tr>
                   </thead>
                 <tbody>
                   {filteredData.map((item) => (
                     <tr key={item.id} className={getRowClassName(item)}>
-                      <td className="p-2 md:p-3 font-mono text-xs bg-slate-50">
-                        <div className="md:truncate md:max-w-none">
-                          <span className="md:hidden break-all text-[10px] leading-tight">{item.serial_number}</span>
-                          <span className="hidden md:inline">{item.serial_number}</span>
+                      <td className="p-2.5 md:p-4 font-mono text-xs md:text-sm bg-slate-50">
+                        <div className="break-all md:truncate md:max-w-none leading-snug text-blue-700 font-medium">
+                          {item.serial_number}
                         </div>
                       </td>
-                      <td className="p-2 md:p-3 min-w-[200px]">
-                        <div className="font-medium text-slate-900 text-xs md:text-sm leading-tight">
+                      <td className="p-2.5 md:p-4 min-w-[220px] bg-emerald-50/30">
+                        <div className="font-bold text-slate-900 text-sm md:text-base leading-snug">
                           {item.sku_info ? item.sku_info.model_name : item.sku_id}
                         </div>
                         {item.sku_info && (
-                          <div className="text-xs text-slate-500 mt-0.5 leading-tight">{item.sku_info.spec}</div>
+                          <div className="text-xs md:text-sm text-slate-600 mt-0.5 leading-snug">{item.sku_info.spec}</div>
                         )}
                       </td>
-                      <td className="p-2 md:p-3">
-                        <span className={`inline-block px-1 md:px-2 py-0.5 md:py-1 rounded text-xs font-medium ${
-                          item.location === 'DISPLAY_T1' ? 'bg-purple-100 text-purple-700' :
-                          item.location === 'STORAGE_T1' ? 'bg-blue-100 text-blue-700' :
-                          'bg-orange-100 text-orange-700'
+                      <td className="p-2.5 md:p-4">
+                        <span className={`inline-block px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold border ${
+                          item.location === 'DISPLAY_T1' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                          item.location === 'STORAGE_T1' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                          'bg-orange-100 text-orange-800 border-orange-300'
                         }`}>
                           <span className="hidden md:inline">{getLocationDisplayName(item.location)}</span>
-                          <span className="md:hidden text-[10px] leading-tight">
-                            {item.location === 'DISPLAY_T1' ? 'Kệ Trưng Bày T1' :
-                             item.location === 'STORAGE_T1' ? 'Tủ Chứa T1' : 'Kho T3'}
+                          <span className="md:hidden leading-tight">
+                            {item.location === 'DISPLAY_T1' ? 'Kệ T1' :
+                             item.location === 'STORAGE_T1' ? 'Tủ T1' : 'Kho T3'}
                           </span>
                         </span>
                       </td>
-                      <td className="p-2 md:p-3">
-                        <span className={`inline-block px-1 md:px-2 py-0.5 md:py-1 rounded text-xs font-medium ${
-                          ['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'bg-green-100 text-green-700' :
-                          item.condition === 'OPEN_BOX' ? 'bg-amber-100 text-amber-700' :
-                          item.condition === 'USED' ? 'bg-blue-100 text-blue-700' :
-                          'bg-orange-100 text-orange-700'
+                      <td className="p-2.5 md:p-4">
+                        <span className={`inline-block px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold border ${
+                          ['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'bg-green-100 text-green-800 border-green-300' :
+                          item.condition === 'OPEN_BOX' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                          item.condition === 'USED' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                          'bg-orange-100 text-orange-800 border-orange-300'
                         }`}>
                           <span className="hidden md:inline">{getConditionDisplayName(item.condition)}</span>
                           <span className="md:hidden">
@@ -458,12 +459,12 @@ const Inventory = () => {
                           </span>
                         </span>
                       </td>
-                      <td className="p-2 md:p-3">
-                        <span className={`px-1 md:px-2 py-0.5 md:py-1 rounded text-xs font-medium ${
-                          item.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                          item.status === 'SOLD' ? 'bg-gray-200 text-gray-600' :
-                          item.status === 'HOLD' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
+                      <td className="p-2.5 md:p-4">
+                        <span className={`px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-bold border-2 ${
+                          item.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800 border-emerald-400' :
+                          item.status === 'SOLD' ? 'bg-gray-200 text-gray-700 border-gray-300' :
+                          item.status === 'HOLD' ? 'bg-yellow-100 text-yellow-800 border-yellow-400' :
+                          'bg-red-100 text-red-800 border-red-400'
                         }`}>
                           <span className="hidden md:inline">{getStatusDisplayName(item.status)}</span>
                           <span className="md:hidden">
@@ -473,22 +474,22 @@ const Inventory = () => {
                           </span>
                         </span>
                       </td>
-                      <td className="p-2 md:p-3 text-xs text-slate-600">
+                      <td className="p-2.5 md:p-4 text-xs md:text-sm text-slate-700 font-medium">
                         <div className="hidden md:block">{formatDate(item.received_at)}</div>
                         <div className="md:hidden">
                           {new Date(item.received_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
                         </div>
                       </td>
-                      <td className="p-2 md:p-3">
-                        <div className="flex gap-0.5 md:gap-2 flex-wrap">
+                      <td className="p-2.5 md:p-4">
+                        <div className="flex gap-1 md:gap-2 flex-wrap">
                           {/* Barcode Button - Always visible */}
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleShowBarcode(item)}
-                            className="text-xs px-1 md:px-2 py-0.5 md:py-1 h-6 md:h-8 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300"
+                            className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-400 border-2 font-semibold"
                           >
-                            <Barcode className="h-3 w-3 md:mr-1" />
+                            <Barcode className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                             <span className="hidden md:inline ml-1">Mã</span>
                           </Button>
                           
@@ -497,7 +498,7 @@ const Inventory = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleSellClick(item.serial_number)}
-                              className="text-xs px-1 md:px-2 py-0.5 md:py-1 h-6 md:h-8 hover:bg-green-50 hover:text-green-700 hover:border-green-300"
+                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-green-50 hover:text-green-700 hover:border-green-400 border-2 font-semibold"
                             >
                               <span className="md:hidden">Bán</span>
                               <span className="hidden md:inline">Bán Hàng</span>
@@ -508,7 +509,7 @@ const Inventory = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReturnClick(item.serial_number)}
-                              className="text-xs px-1 md:px-2 py-0.5 md:py-1 h-6 md:h-8 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 border-2 font-semibold"
                             >
                               <span className="md:hidden">Nhập</span>
                               <span className="hidden md:inline">Nhập Lại</span>
@@ -519,9 +520,9 @@ const Inventory = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleEditItem(item.serial_number)}
-                              className="text-xs px-1 md:px-2 py-0.5 md:py-1 h-6 md:h-8 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 border-2 font-semibold"
                             >
-                              <Edit className="h-3 w-3 md:mr-1" />
+                              <Edit className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                               <span className="hidden md:inline ml-1">Sửa</span>
                             </Button>
                           )}
@@ -530,9 +531,9 @@ const Inventory = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReportError(item.serial_number)}
-                              className="text-xs px-1 md:px-2 py-0.5 md:py-1 h-6 md:h-8 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300"
+                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-400 border-2 font-semibold"
                             >
-                              <AlertCircle className="h-3 w-3 md:mr-1" />
+                              <AlertCircle className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                               <span className="hidden md:inline ml-1">Báo Lỗi</span>
                             </Button>
                           )}
