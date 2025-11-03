@@ -3,108 +3,78 @@ import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { getLocationDisplayName, getConditionDisplayName } from '@/lib/constants';
 
-interface SKUStatus {
-  sku_id: string;
-  brand: string;
+interface InventoryItemStatus {
+  serial_number: string;
   model_name: string;
-  spec: string;
-  qty_available: number;
-  qty_display: number;
-  qty_storage: number;
-  qty_warehouse: number;
-  avg_age_days: number;
-  oldest_age_days: number;
-  total_capital_lock: number;
+  location: string;
+  condition: string;
+  age_days: number;
+  received_at: string;
 }
 
 const Dashboard = () => {
-  const [data, setData] = useState<SKUStatus[]>([]);
+  const [data, setData] = useState<InventoryItemStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSKUStatus();
+    fetchInventoryStatus();
+    
+    // Auto refresh every 30 seconds
+    const interval = setInterval(fetchInventoryStatus, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchSKUStatus = async () => {
+  const fetchInventoryStatus = async () => {
     try {
-      // Fetch SKU info
-      const { data: skus, error: skuError } = await supabase
-        .from('sku_info')
-        .select('*');
-
-      if (skuError) throw skuError;
-
-      // Fetch inventory items
-      const { data: items, error: itemsError } = await supabase
+      // Fetch inventory items with SKU info
+      const { data: items, error } = await supabase
         .from('inventory_items')
-        .select('*');
+        .select(`
+          serial_number,
+          location,
+          condition,
+          received_at,
+          status,
+          sku_info (
+            model_name
+          )
+        `)
+        .eq('status', 'AVAILABLE')
+        .order('received_at', { ascending: false });
 
-      if (itemsError) throw itemsError;
+      if (error) throw error;
 
-      // Calculate statistics for each SKU
-      const skuStats = skus?.map((sku) => {
-        const skuItems = items?.filter(
-          (item) => item.sku_id === sku.sku_id && item.status === 'AVAILABLE'
-        ) || [];
-
-        const qty_available = skuItems.length;
-        const qty_display = skuItems.filter((i) => i.location === 'DISPLAY_T1').length;
-        const qty_storage = skuItems.filter((i) => i.location === 'STORAGE_T1').length;
-        const qty_warehouse = skuItems.filter((i) => i.location === 'WAREHOUSE_T3').length;
-
-        const ages = skuItems.map((i) =>
-          Math.floor((Date.now() - new Date(i.received_at).getTime()) / (1000 * 60 * 60 * 24))
+      // Transform data to include age calculation
+      const itemsWithAge = items?.map((item) => {
+        const age_days = Math.floor(
+          (Date.now() - new Date(item.received_at).getTime()) / (1000 * 60 * 60 * 24)
         );
-        const avg_age_days = ages.length > 0 ? Math.floor(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
-        const oldest_age_days = ages.length > 0 ? Math.max(...ages) : 0;
-
-        const total_capital_lock = skuItems.reduce((sum, item) => sum + Number(item.cost || 0), 0);
 
         return {
-          sku_id: sku.sku_id,
-          brand: sku.brand,
-          model_name: sku.model_name,
-          spec: sku.spec,
-          qty_available,
-          qty_display,
-          qty_storage,
-          qty_warehouse,
-          avg_age_days,
-          oldest_age_days,
-          total_capital_lock,
+          serial_number: item.serial_number,
+          model_name: item.sku_info?.model_name || 'N/A',
+          location: item.location,
+          condition: item.condition,
+          age_days,
+          received_at: item.received_at,
         };
       }) || [];
 
-      // Sort by capital lock descending
-      skuStats.sort((a, b) => b.total_capital_lock - a.total_capital_lock);
-      setData(skuStats);
+      setData(itemsWithAge);
     } catch (error) {
-      console.error('Error fetching SKU status:', error);
+      console.error('Error fetching inventory status:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount);
-  };
-
-  const getRowClassName = (sku: SKUStatus) => {
-    const classes = ['border-b transition-colors'];
-    
-    if (sku.oldest_age_days > 30) {
-      classes.push('bg-[hsl(var(--highlight-aging))]');
-    }
-    
-    if (sku.qty_available > 5 && sku.total_capital_lock > 100000000) {
-      classes.push('font-semibold');
-    }
-    
-    return classes.join(' ');
+  const getAgeColor = (days: number) => {
+    if (days > 30) return 'text-red-600 font-bold';
+    if (days > 14) return 'text-orange-600';
+    return 'text-green-600';
   };
 
   if (loading) {
@@ -117,55 +87,108 @@ const Dashboard = () => {
     );
   }
 
+  const totalItems = data.length;
+  const oldItems = data.filter(item => item.age_days > 30).length;
+
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">SKU Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Capital lock analysis and inventory aging report
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-sm text-slate-600">Tổng quan hệ thống quản lý kho</p>
         </div>
 
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 gap-3 md:gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="pb-2 p-3 md:p-6">
+              <CardDescription className="text-blue-700 text-xs md:text-sm">Tổng Sản Phẩm Có Sẵn</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl font-bold text-blue-900">{totalItems}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 md:p-6 pt-0">
+              <p className="text-xs text-blue-600">Đang có sẵn trong kho</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+            <CardHeader className="pb-2 p-3 md:p-6">
+              <CardDescription className="text-orange-700 text-xs md:text-sm">Hàng Tồn Lâu</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl font-bold text-orange-900">{oldItems}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 md:p-6 pt-0">
+              <p className="text-xs text-orange-600">Trên 30 ngày</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Inventory Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Inventory Status by SKU</CardTitle>
-            <CardDescription>
-              Items highlighted in yellow are aging (30+ days). Bold items have high capital lock (&gt;100M VND with 5+ units).
+            <CardTitle className="text-lg">Tình Trạng Tồn Kho Theo Serial/Service Tag</CardTitle>
+            <CardDescription className="text-sm">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                  <span className="text-xs">Hàng mới (dưới 14 ngày)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-orange-500"></span>
+                  <span className="text-xs">Hàng tồn (14-30 ngày)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
+                  <span className="text-xs">Hàng tồn lâu (trên 30 ngày)</span>
+                </div>
+              </div>
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-[hsl(var(--table-header))]">
-                    <th className="text-left p-3 font-semibold">SKU</th>
-                    <th className="text-left p-3 font-semibold">Model</th>
-                    <th className="text-right p-3 font-semibold">Total</th>
-                    <th className="text-right p-3 font-semibold">Display T1</th>
-                    <th className="text-right p-3 font-semibold">Storage T1</th>
-                    <th className="text-right p-3 font-semibold">Warehouse T3</th>
-                    <th className="text-right p-3 font-semibold">Avg Age</th>
-                    <th className="text-right p-3 font-semibold">Oldest</th>
-                    <th className="text-right p-3 font-semibold">Capital Lock</th>
+              <table className="w-full text-xs">
+                <thead className="bg-slate-100 border-b-2 border-slate-300">
+                  <tr>
+                    <th className="text-left p-1 md:p-2 font-semibold text-slate-700 w-[100px] md:w-auto">Serial/Service Tag</th>
+                    <th className="text-left p-1 md:p-2 font-semibold text-slate-700 min-w-[120px]">Tên Sản Phẩm</th>
+                    <th className="text-center p-1 md:p-2 font-semibold text-slate-700 w-[80px] md:w-auto">Vị Trí</th>
+                    <th className="text-center p-1 md:p-2 font-semibold text-slate-700 w-[80px] md:w-auto">Tình Trạng</th>
+                    <th className="text-center p-1 md:p-2 font-semibold text-slate-700 w-[70px] md:w-auto">Tuổi Hàng</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((sku) => (
-                    <tr key={sku.sku_id} className={getRowClassName(sku)}>
-                      <td className="p-3 font-mono text-sm">{sku.sku_id}</td>
-                      <td className="p-3">
-                        <div className="font-medium">{sku.brand} {sku.model_name}</div>
-                        <div className="text-sm text-muted-foreground">{sku.spec}</div>
+                  {data.map((item) => (
+                    <tr 
+                      key={item.serial_number}
+                      className="border-b border-slate-200 hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="p-1 md:p-2 font-mono text-blue-600 font-medium">
+                        <div className="md:truncate md:max-w-none">
+                          <span className="md:hidden break-all text-[10px] leading-tight">{item.serial_number}</span>
+                          <span className="hidden md:inline">{item.serial_number}</span>
+                        </div>
                       </td>
-                      <td className="text-right p-3">{sku.qty_available}</td>
-                      <td className="text-right p-3">{sku.qty_display}</td>
-                      <td className="text-right p-3">{sku.qty_storage}</td>
-                      <td className="text-right p-3">{sku.qty_warehouse}</td>
-                      <td className="text-right p-3">{sku.avg_age_days}d</td>
-                      <td className="text-right p-3">{sku.oldest_age_days}d</td>
-                      <td className="text-right p-3 font-medium">
-                        {formatCurrency(sku.total_capital_lock)}
+                      <td className="p-1 md:p-2 text-slate-900 text-[10px] md:text-xs">{item.model_name}</td>
+                      <td className="text-center p-1 md:p-2">
+                        <span className="inline-block px-1 md:px-2 py-0.5 rounded text-[9px] md:text-xs bg-blue-100 text-blue-800">
+                          <span className="hidden md:inline">{getLocationDisplayName(item.location)}</span>
+                          <span className="md:hidden">
+                            {item.location === 'DISPLAY_T1' ? 'Kệ T1' :
+                             item.location === 'STORAGE_T1' ? 'Tủ T1' : 'Kho T3'}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="text-center p-1 md:p-2">
+                        <span className="inline-block px-1 md:px-2 py-0.5 rounded text-[9px] md:text-xs bg-green-100 text-green-800">
+                          <span className="hidden md:inline">{getConditionDisplayName(item.condition)}</span>
+                          <span className="md:hidden">
+                            {['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'New' :
+                             item.condition === 'OPEN_BOX' ? 'Open' :
+                             item.condition === 'USED' ? 'Used' : 'Ref'}
+                          </span>
+                        </span>
+                      </td>
+                      <td className={`text-center p-1 md:p-2 font-semibold text-[10px] md:text-xs ${getAgeColor(item.age_days)}`}>
+                        <span className="md:hidden">{item.age_days}d</span>
+                        <span className="hidden md:inline">{item.age_days} ngày</span>
                       </td>
                     </tr>
                   ))}

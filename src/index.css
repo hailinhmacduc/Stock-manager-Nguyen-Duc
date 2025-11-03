@@ -2,6 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Font Size Optimization */
+@layer base {
+  html {
+    font-size: 14px;
+  }
+  
+  @media (max-width: 768px) {
+    html {
+      font-size: 13px;
+    }
+  }
+  
+  body {
+    @apply text-sm;
+  }
+  
+  h1 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  h2 {
+    @apply text-lg md:text-xl;
+  }
+  
+  h3 {
+    @apply text-base md:text-lg;
+  }
+}
+
+/* Responsive Table Optimization */
+@layer components {
+  .responsive-table {
+    @apply w-full overflow-x-auto;
+  }
+  
+  .responsive-table table {
+    @apply min-w-full text-xs md:text-sm;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    @apply px-2 py-1.5 md:px-3 md:py-2;
+  }
+  
+  /* Mobile Table Optimization */
+  @media (max-width: 768px) {
+    .responsive-table table {
+      min-width: 600px; /* Ensure minimum width for horizontal scroll */
+    }
+    
+    /* Make product name column wider on mobile */
+    .responsive-table th:nth-child(2),
+    .responsive-table td:nth-child(2) {
+      min-width: 200px;
+      max-width: 250px;
+    }
+    
+    /* Compact other columns */
+    .responsive-table th:not(:nth-child(2)),
+    .responsive-table td:not(:nth-child(2)) {
+      white-space: nowrap;
+    }
+  }
+  
+  /* Compact Cards on Mobile */
+  .compact-card {
+    @apply p-3 md:p-4;
+  }
+  
+  .compact-card-header {
+    @apply pb-1 md:pb-2;
+  }
+  
+  .compact-card-title {
+    @apply text-base md:text-lg;
+  }
+  
+  .compact-card-description {
+    @apply text-xs md:text-sm;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -107,5 +189,103 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+}
+
+@layer utilities {
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Custom shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-smooth hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  /* Gradient text utilities */
+  .gradient-text-blue {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent;
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply bg-amber-100 text-amber-800;
+  }
+
+  .badge-danger {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .badge-info {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+
+  .status-dot-success {
+    @apply status-dot bg-green-500;
+  }
+
+  .status-dot-warning {
+    @apply status-dot bg-amber-500;
+  }
+
+  .status-dot-danger {
+    @apply status-dot bg-red-500;
+  }
+
+  /* Animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out;
   }
 }

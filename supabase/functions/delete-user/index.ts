@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import bcrypt from 'https://esm.sh/bcryptjs@2.4.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,53 +12,68 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password } = await req.json();
+    const { userId } = await req.json();
+
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: 'User ID is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Query user by email
-    const { data: user, error } = await supabaseClient
+    // Get user info before deletion for logging
+    const { data: user, error: fetchError } = await supabaseClient
       .from('users')
-      .select('*')
-      .eq('email', email)
+      .select('email, full_name')
+      .eq('id', userId)
       .single();
 
-    if (error || !user) {
+    if (fetchError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Invalid credentials' }),
+        JSON.stringify({ error: 'User not found' }),
         { 
-          status: 401,
+          status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
-    // Verify password
-    const passwordMatch = bcrypt.compareSync(password, user.password_hash);
+    // Delete the user
+    const { error: deleteError } = await supabaseClient
+      .from('users')
+      .delete()
+      .eq('id', userId);
 
-    if (!passwordMatch) {
+    if (deleteError) {
+      console.error('Delete error:', deleteError);
       return new Response(
-        JSON.stringify({ error: 'Invalid credentials' }),
+        JSON.stringify({ error: 'Failed to delete user' }),
         { 
-          status: 401,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
-
-    // Return user data (without password)
-    const { password_hash, ...userWithoutPassword } = user;
 
     return new Response(
-      JSON.stringify({ user: userWithoutPassword }),
+      JSON.stringify({ 
+        success: true, 
+        message: `User ${user.full_name || user.email} has been deleted successfully`
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
+    console.error('Error deleting user:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return new Response(
       JSON.stringify({ error: errorMessage }),
