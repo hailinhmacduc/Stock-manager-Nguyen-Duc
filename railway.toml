@@ -1,15 +1,8 @@
 [build]
 builder = "nixpacks"
 
-[build.nixpacksConfig]
-# Disable frozen lockfile to allow package-lock.json updates
-nixpacksConfigOverride = """
-[phases.install]
-cmds = ["npm ci --no-frozen-lockfile"]
-"""
-
 [deploy]
-startCommand = "npm run build && npm run preview"
+startCommand = "npm run preview"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
