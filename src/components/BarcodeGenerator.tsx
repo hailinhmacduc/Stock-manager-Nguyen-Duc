@@ -1,8 +1,9 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import JsBarcode from 'jsbarcode';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Printer, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface BarcodeGeneratorProps {
   open: boolean;
@@ -19,29 +20,31 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const barcodeRef = useRef<SVGSVGElement>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Effect 1: Đồng bộ state với prop 'open'
   useEffect(() => {
-    if (open && barcodeRef.current && serialNumber) {
-      const timeoutId = setTimeout(() => {
-        if (!barcodeRef.current) return;
-        
-        try {
-          JsBarcode(barcodeRef.current, serialNumber, {
-            format: "CODE128B", // ÉP BUỘC BẢNG MÃ B
-            width: 2,
-            height: 60,
-            displayValue: true,
-            fontSize: 16,
-            margin: 10,
-          });
-        } catch (e) {
-          console.error("Lỗi tạo mã vạch:", e);
-        }
-      }, 100);
+    setIsDialogOpen(open);
+  }, [open]);
 
-      return () => clearTimeout(timeoutId);
+  // Effect 2: Chỉ vẽ mã vạch khi dialog đã thực sự mở
+  useEffect(() => {
+    if (isDialogOpen && barcodeRef.current && serialNumber) {
+      try {
+        JsBarcode(barcodeRef.current, serialNumber, {
+          format: "CODE128", // Sử dụng CODE128 chung cho độ tương thích cao nhất
+          width: 2,
+          height: 60,
+          displayValue: true,
+          fontSize: 16,
+          margin: 10,
+        });
+      } catch (e) {
+        console.error("Lỗi tạo mã vạch:", e);
+        // Tùy chọn: Hiển thị lỗi cho người dùng
+      }
     }
-  }, [open, serialNumber]);
+  }, [isDialogOpen, serialNumber]); // Chạy lại khi dialog mở hoặc serial thay đổi
 
   const handlePrint = () => {
     const printContent = printRef.current;
@@ -113,22 +116,24 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
     const container = printRef.current;
     if (!container) return;
 
-    // html2canvas(container, {
-    //   scale: 3, // Tăng độ phân giải ảnh
-    //   backgroundColor: null, // Giữ nền trong suốt nếu có
-    //   onclone: (document) => {
-    //     // Xóa viền dashed khi chụp ảnh
-    //     const clonedContainer = document.querySelector('.barcode-container') as HTMLElement;
-    //     if (clonedContainer) {
-    //       clonedContainer.style.border = 'none';
-    //     }
-    //   }
-    // }).then(canvas => {
-    //   const link = document.createElement('a');
-    //   link.download = `barcode-${serialNumber}.png`;
-    //   link.href = canvas.toDataURL('image/png');
-    //   link.click();
-    // });
+    html2canvas(container, {
+      scale: 3, // Tăng độ phân giải
+      backgroundColor: '#ffffff', // Đảm bảo nền trắng
+      onclone: (document) => {
+        // Tùy chỉnh clone DOM trước khi chụp ảnh nếu cần
+        const clonedContainer = document.querySelector('.barcode-container') as HTMLElement;
+        if (clonedContainer) {
+          clonedContainer.style.border = 'none'; // Bỏ viền dashed
+        }
+      }
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `barcode-${serialNumber}.png`;
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
   };
 
   return (
