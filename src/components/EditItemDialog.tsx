@@ -357,11 +357,10 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
                     <SelectValue placeholder="Chọn tình trạng" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="NEW_SEAL">New Box</SelectItem>
-                    <SelectItem value="NEW_OPEN">Open Box</SelectItem>
-                    <SelectItem value="USED_GOOD">Used Good</SelectItem>
-                    <SelectItem value="USED_FAIR">Used Fair</SelectItem>
-                    <SelectItem value="REFURBISHED">Refurbished</SelectItem>
+                    <SelectItem value="NEW_BOX">✅ New Box</SelectItem>
+                    <SelectItem value="OPEN_BOX">📦 Open Box</SelectItem>
+                    <SelectItem value="USED">💻 Máy Cũ</SelectItem>
+                    <SelectItem value="REPAIRING">🛠️ Đang Sửa/Đóng Lại</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
