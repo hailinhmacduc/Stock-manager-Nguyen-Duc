@@ -242,74 +242,78 @@ const Inventory = () => {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
         </div>
 
-        {/* Search and Filters - Mobile Optimized */}
-        <Card className="shadow-lg border-2">
-          <CardContent className="pt-3 md:pt-6 pb-3 md:pb-6">
-            <div className="space-y-2 md:space-y-0 md:flex md:flex-row md:gap-3">
-              {/* Search Bar */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
-                <Input
-                  placeholder="🔍 Tìm kiếm theo serial, tên sản phẩm..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 md:pl-11 pr-10 h-10 md:h-12 border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm md:text-base"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
-                  >
-                    <X className="h-3 w-3 md:h-4 md:w-4" />
-                  </button>
-                )}
-              </div>
-              
-              {/* Enhanced Filters - Responsive Grid */}
-              <div className="grid grid-cols-3 gap-1.5 md:flex md:gap-2">
-                <Select value={locationFilter} onValueChange={setLocationFilter}>
-                  <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
-                    <Filter className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-purple-600" />
-                    <SelectValue placeholder="Vị trí" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">📍 Tất Cả</SelectItem>
-                    <SelectItem value="DISPLAY_T1">🏪 Kệ T1</SelectItem>
-                    <SelectItem value="STORAGE_T1">📦 Tủ T1</SelectItem>
-                    <SelectItem value="WAREHOUSE_T3">🏭 Kho T3</SelectItem>
-                  </SelectContent>
-                </Select>
+        {/* Search and Filters - Sticky Mobile Optimized */}
+        <div className="sticky-search-filters sticky-transition">
+          {/* Sticky indicator line */}
+          <div className="h-0.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 opacity-80"></div>
+          <Card className="sticky-backdrop sticky-transition">
+            <CardContent className="pt-3 md:pt-6 pb-3 md:pb-6">
+              <div className="space-y-2 md:space-y-0 md:flex md:flex-row md:gap-3">
+                {/* Search Bar */}
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+                  <Input
+                    placeholder="🔍 Tìm kiếm theo serial, tên sản phẩm..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 md:pl-11 pr-10 h-10 md:h-12 border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm md:text-base"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
+                    >
+                      <X className="h-3 w-3 md:h-4 md:w-4" />
+                    </button>
+                  )}
+                </div>
+                
+                {/* Enhanced Filters - Responsive Grid */}
+                <div className="grid grid-cols-3 gap-1.5 md:flex md:gap-2">
+                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                    <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
+                      <Filter className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-purple-600" />
+                      <SelectValue placeholder="Vị trí" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">📍 Tất Cả</SelectItem>
+                      <SelectItem value="DISPLAY_T1">🏪 Kệ T1</SelectItem>
+                      <SelectItem value="STORAGE_T1">📦 Tủ T1</SelectItem>
+                      <SelectItem value="WAREHOUSE_T3">🏭 Kho T3</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-[130px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
-                    <SelectValue placeholder="Trạng thái" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">📊 Tất Cả</SelectItem>
-                    <SelectItem value="AVAILABLE">✅ Sẵn</SelectItem>
-                    <SelectItem value="SOLD">💰 Bán</SelectItem>
-                    <SelectItem value="HOLD">⏸️ Giữ</SelectItem>
-                    <SelectItem value="DEFECT">⚠️ Lỗi</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full md:w-[130px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
+                      <SelectValue placeholder="Trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">📊 Tất Cả</SelectItem>
+                      <SelectItem value="AVAILABLE">✅ Sẵn</SelectItem>
+                      <SelectItem value="SOLD">💰 Bán</SelectItem>
+                      <SelectItem value="HOLD">⏸️ Giữ</SelectItem>
+                      <SelectItem value="DEFECT">⚠️ Lỗi</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                {/* Condition Filter */}
-                <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                  <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
-                    <SelectValue placeholder="Tình trạng" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">📋 Tất Cả</SelectItem>
-                    <SelectItem value="NEW_SEAL">🆕 New</SelectItem>
-                    <SelectItem value="OPEN_BOX">📦 Open</SelectItem>
-                    <SelectItem value="USED">🔧 Cũ</SelectItem>
-                    <SelectItem value="REPAIRING">🛠️ Sửa</SelectItem>
-                  </SelectContent>
-                </Select>
+                  {/* Condition Filter */}
+                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                    <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
+                      <SelectValue placeholder="Tình trạng" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">📋 Tất Cả</SelectItem>
+                      <SelectItem value="NEW_SEAL">🆕 New</SelectItem>
+                      <SelectItem value="OPEN_BOX">📦 Open</SelectItem>
+                      <SelectItem value="USED">🔧 Cũ</SelectItem>
+                      <SelectItem value="REPAIRING">🛠️ Sửa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Inventory Statistics - Mobile Optimized & Compact */}
         <Card className="shadow-lg bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-300">
@@ -402,7 +406,7 @@ const Inventory = () => {
                 )}
               </div>
             ) : (
-              <div className="responsive-table">
+              <div className="responsive-table mobile-table-scroll">
                 <table className="w-full min-w-full">
                   <thead>
                     <tr className="border-b-2 bg-gradient-to-r from-emerald-100 to-teal-100">

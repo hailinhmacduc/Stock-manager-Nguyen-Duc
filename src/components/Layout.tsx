@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, Package, BarChart3, Move, Laptop, Users, AlertCircle, ClipboardCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { BottomNavigation } from '@/components/BottomNavigation';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout, permissions } = useAuth();
@@ -38,7 +39,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <nav className="border-b bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
+      {/* Desktop Navigation - Hidden on Mobile */}
+      <nav className="hidden md:block border-b bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-2 md:px-4">
           <div className="flex h-16 md:h-20 items-center justify-between">
             <div className="flex items-center gap-2 md:gap-6">
@@ -176,10 +178,48 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
         </div>
       </nav>
-      <main className="container mx-auto px-2 md:px-4 py-6 md:py-10">{children}</main>
+
+      {/* Mobile Header - Simplified */}
+      <header className="md:hidden bg-white/90 backdrop-blur-lg shadow-lg sticky top-0 z-40 border-b-2 border-slate-200">
+        <div className="px-3 py-3">
+          <div className="flex items-center justify-between">
+            <Link to="/dashboard" className="flex items-center gap-2 hover:scale-105 transition-transform duration-200">
+              <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-2 rounded-lg shadow-lg">
+                <Laptop className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <span className="font-bold text-base bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                  Quản Lý Tồn Kho
+                </span>
+                <p className="text-xs text-muted-foreground font-medium">💻 Điện máy Nguyễn Đức</p>
+              </div>
+            </Link>
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <p className="text-sm font-bold text-slate-800">{user?.full_name}</p>
+                {getUserRoleBadge()}
+              </div>
+              <Button 
+                onClick={logout} 
+                variant="ghost" 
+                size="sm" 
+                className="gap-1 text-xs px-2 py-1.5 font-medium hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content with Bottom Padding for Mobile Navigation */}
+      <main className="container mx-auto px-2 md:px-4 py-4 md:py-10 pb-24 md:pb-10">{children}</main>
       
-      {/* Decorative Elements */}
-      <div className="fixed bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-emerald-500 to-purple-500 opacity-50"></div>
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation />
+      
+      {/* Decorative Elements - Hidden on Mobile */}
+      <div className="hidden md:block fixed bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-emerald-500 to-purple-500 opacity-50"></div>
     </div>
   );
 };

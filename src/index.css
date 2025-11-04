@@ -335,4 +335,150 @@ All colors MUST be HSL.
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
   }
+
+  /* Safe area support for mobile devices with home indicator */
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Mobile bottom navigation styles */
+  .mobile-bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-slate-200 shadow-2xl;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Responsive grid for bottom navigation */
+  .bottom-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 0;
+    padding: 0.5rem 0.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .bottom-nav-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .bottom-nav-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  /* Enhanced mobile touch targets */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Mobile-first responsive utilities */
+  .mobile-text-xs {
+    @apply text-xs sm:text-sm;
+  }
+
+  .mobile-text-sm {
+    @apply text-sm sm:text-base;
+  }
+
+  .mobile-text-base {
+    @apply text-base sm:text-lg;
+  }
+
+  /* Mobile navigation active state */
+  .mobile-nav-active {
+    @apply bg-gradient-to-br text-white shadow-lg transform scale-105;
+  }
+
+  .mobile-nav-inactive {
+    @apply text-slate-600 hover:text-slate-800 active:scale-95;
+  }
+
+  /* Mobile table improvements */
+  @media (max-width: 768px) {
+    .mobile-table-scroll {
+      @apply overflow-x-auto;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+    
+    .mobile-table-scroll::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .mobile-table-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 2px;
+    }
+    
+    .mobile-table-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 2px;
+    }
+    
+    .mobile-table-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  }
+
+  /* Mobile card optimizations */
+  .mobile-card-compact {
+    @apply p-3 md:p-6 space-y-2 md:space-y-4;
+  }
+
+  .mobile-stats-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4;
+  }
+
+  /* Mobile button improvements */
+  .mobile-button-sm {
+    @apply px-2 py-1 text-xs md:px-3 md:py-1.5 md:text-sm;
+  }
+
+  .mobile-button-base {
+    @apply px-3 py-2 text-sm md:px-4 md:py-2.5 md:text-base;
+  }
+
+  /* Sticky search and filter improvements */
+  .sticky-search-filters {
+    @apply sticky bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50;
+    z-index: 40; /* Higher than bottom nav (z-50) but below modals */
+    top: 4rem; /* 64px for mobile header */
+    padding-bottom: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .sticky-search-filters {
+      top: 5rem; /* 80px for desktop header */
+      padding-bottom: 1rem;
+    }
+  }
+
+  /* Enhanced backdrop blur for sticky elements */
+  .sticky-backdrop {
+    @apply bg-white/95 backdrop-blur-sm border-2;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Smooth sticky transition */
+  .sticky-transition {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Mobile sticky adjustments */
+  @media (max-width: 768px) {
+    .mobile-sticky-top {
+      top: 4rem; /* Adjust for mobile header height */
+    }
+    
+    .mobile-sticky-padding {
+      padding-bottom: 0.5rem;
+    }
+  }
 }

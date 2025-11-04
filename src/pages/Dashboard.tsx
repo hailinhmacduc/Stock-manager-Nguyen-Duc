@@ -120,7 +120,7 @@ const Dashboard = () => {
         </div>
 
         {/* Main Stats Grid - Mobile Optimized */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="mobile-stats-grid">
           {/* Total Items Card */}
           <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 border-0 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
             <CardHeader className="pb-1 md:pb-2 p-3 md:p-6">
@@ -281,7 +281,7 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto mobile-table-scroll">
               <table className="w-full text-sm md:text-base">
                 <thead className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
                   <tr>

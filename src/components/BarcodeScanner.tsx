@@ -136,8 +136,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onError 
       scannerRef.current = new Html5Qrcode(scannerId);
 
       // TÁCH RỜI CẤU HÌNH ĐỂ FIX LỖI
-      // 1. Cấu hình để CHỌN camera (chỉ 1 key)
-      const cameraSelectionConfig = { facingMode: 'environment' };
+      // 1. Cấu hình để CHỌN camera (chỉ 1 key) - ƯU TIÊN CAMERA SAU
+      const cameraSelectionConfig = { facingMode: "environment" };
 
       // 2. Cấu hình để TỐI ƯU camera (nhiều key)
       const config = {
@@ -153,6 +153,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onError 
           useBarCodeDetectorIfSupported: true
         },
         videoConstraints: {
+          // Yêu cầu camera sau một lần nữa trong video constraints
+          facingMode: "environment",
           width: { ideal: 1920, min: 1280 }, // Tăng độ phân giải
           height: { ideal: 1080, min: 720 },
           focusMode: 'continuous',
