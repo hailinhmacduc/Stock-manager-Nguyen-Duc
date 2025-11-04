@@ -1,9 +1,8 @@
-import { useRef, useState, useEffect } from 'react';
-import Barcode from 'react-barcode';
+import { useRef, useEffect } from 'react';
+import JsBarcode from 'jsbarcode';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Printer, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
 
 interface BarcodeGeneratorProps {
   open: boolean;
@@ -20,48 +19,27 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
 }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const barcodeRef = useRef<SVGSVGElement>(null);
-  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    // Chỉ chạy khi dialog mở và có serial number
-    if (open && serialNumber) {
-      // Thêm độ trễ để đảm bảo dialog CÓ THẬT trên DOM
+    if (open && barcodeRef.current && serialNumber) {
       const timeoutId = setTimeout(() => {
-        // Kiểm tra lại ref phòng trường hợp dialog đóng nhanh
-        if (!barcodeRef.current) {
-          console.warn("Barcode ref không tồn tại, bỏ qua vẽ.");
-          return;
-        }
-
+        if (!barcodeRef.current) return;
+        
         try {
-          // Reset trạng thái cũ
-          barcodeRef.current.innerHTML = '';
-          setError('');
-
-          // JsBarcode(barcodeRef.current, serialNumber, {
-          //   format: "CODE128B", // ÉP BUỘC SỬ DỤNG BẢNG MÃ B
-          //   width: 2,
-          //   height: 60,
-          //   displayValue: true,
-          //   fontSize: 16,
-          //   margin: 10,
-          //   valid: function (valid) {
-          //     if (!valid) {
-          //       setError('Serial không hợp lệ cho mã vạch CODE128.');
-          //     }
-          //   }
-          // });
-        } catch (e: any) {
-          console.error("Lỗi jsbarcode:", e.message);
-          setError(e.message);
+          JsBarcode(barcodeRef.current, serialNumber, {
+            format: "CODE128B", // ÉP BUỘC BẢNG MÃ B
+            width: 2,
+            height: 60,
+            displayValue: true,
+            fontSize: 16,
+            margin: 10,
+          });
+        } catch (e) {
+          console.error("Lỗi tạo mã vạch:", e);
         }
-      }, 150); // Tăng độ trễ lên 150ms để đảm bảo thành công
+      }, 100);
 
-      // Cleanup function
       return () => clearTimeout(timeoutId);
-    } else {
-      // Reset khi dialog đóng
-      setError('');
     }
   }, [open, serialNumber]);
 
@@ -135,22 +113,22 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
     const container = printRef.current;
     if (!container) return;
 
-    html2canvas(container, {
-      scale: 3, // Tăng độ phân giải ảnh
-      backgroundColor: null, // Giữ nền trong suốt nếu có
-      onclone: (document) => {
-        // Xóa viền dashed khi chụp ảnh
-        const clonedContainer = document.querySelector('.barcode-container') as HTMLElement;
-        if (clonedContainer) {
-          clonedContainer.style.border = 'none';
-        }
-      }
-    }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = `barcode-${serialNumber}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
+    // html2canvas(container, {
+    //   scale: 3, // Tăng độ phân giải ảnh
+    //   backgroundColor: null, // Giữ nền trong suốt nếu có
+    //   onclone: (document) => {
+    //     // Xóa viền dashed khi chụp ảnh
+    //     const clonedContainer = document.querySelector('.barcode-container') as HTMLElement;
+    //     if (clonedContainer) {
+    //       clonedContainer.style.border = 'none';
+    //     }
+    //   }
+    // }).then(canvas => {
+    //   const link = document.createElement('a');
+    //   link.download = `barcode-${serialNumber}.png`;
+    //   link.href = canvas.toDataURL('image/png');
+    //   link.click();
+    // });
   };
 
   return (
@@ -179,16 +157,8 @@ export const BarcodeGenerator: React.FC<BarcodeGeneratorProps> = ({
               </div>
             )}
             
-            <div className="flex justify-center items-center pb-2">
-              <Barcode 
-                value={serialNumber}
-                format="CODE128" // Chuẩn CODE128
-                width={1.5}
-                height={60}
-                displayValue={true}
-                fontSize={16}
-                margin={10}
-              />
+            <div className="flex justify-center items-center pb-2 min-h-[80px]">
+              <svg ref={barcodeRef}></svg>
             </div>
           </div>
 
