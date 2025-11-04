@@ -1,4 +1,4 @@
-# Laptop Inventory Management System
+# Stock manager ND
 
 A full-stack internal inventory web application for tracking laptop retail stock by serial number, storage locations, aging, and capital lock analysis.
 
