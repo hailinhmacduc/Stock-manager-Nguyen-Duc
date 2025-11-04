@@ -635,7 +635,7 @@ const Inventory = () => {
             .filter(item => selectedItems.includes(item.serial_number))
             .map(item => ({
               serialNumber: item.serial_number,
-              productName: `${item.sku_info?.brand} ${item.sku_info?.model_name}`
+              productName: item.sku_info?.model_name || item.sku_id
             }))
         }
       />

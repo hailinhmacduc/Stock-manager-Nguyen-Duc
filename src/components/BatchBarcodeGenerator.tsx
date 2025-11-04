@@ -67,29 +67,35 @@ export const BatchBarcodeGenerator: React.FC<BatchBarcodeGeneratorProps> = ({
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: space-around;
+                align-items: flex-start;
               }
               .barcode-item-container {
-                width: 48%; /* Adjust for 2-column layout with a small gap */
+                width: 48%;
                 height: 100%;
                 box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-start; /* Align content to the top */
                 align-items: center;
                 page-break-inside: avoid;
-                padding: 2px;
+                padding: 4px;
               }
                .product-name {
-                font-size: 8px; /* Adjust font size for the small label */
+                font-family: Arial, sans-serif;
+                font-weight: bold;
+                font-size: 7.5px; /* Slightly smaller font */
                 text-align: center;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
                 width: 100%;
+                line-height: 1.1; /* Tighter line height */
+                height: 3.3em; /* Allow for up to 3 lines */
+                overflow: hidden; /* Hide overflow to keep layout clean */
+                margin-bottom: 2px;
+                overflow-wrap: break-word; /* Break long words */
               }
               svg {
                 width: 100%;
                 height: auto;
+                flex-grow: 1; /* Allow barcode to fill remaining space */
               }
             }
           </style>
