@@ -45,9 +45,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <div className="flex h-16 md:h-20 items-center justify-between">
             <div className="flex items-center gap-2 md:gap-6">
               <Link to="/dashboard" className="flex items-center gap-2 md:gap-3 hover:scale-105 transition-transform duration-200">
-                <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-2 md:p-3 rounded-xl shadow-lg">
-                  <Laptop className="h-5 w-5 md:h-6 md:w-6 text-white" />
-                </div>
+                <img src="/logo.png" alt="Logo" className="h-10 w-10 md:h-12 md:w-12" />
                 <div className="hidden sm:block">
                   <span className="font-bold text-lg md:text-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                     Quản Lý Tồn Kho
@@ -184,9 +182,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="px-3 py-3">
           <div className="flex items-center justify-between">
             <Link to="/dashboard" className="flex items-center gap-2 hover:scale-105 transition-transform duration-200">
-              <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-2 rounded-lg shadow-lg">
-                <Laptop className="h-5 w-5 text-white" />
-              </div>
+              <img src="/logo.png" alt="Logo" className="h-10 w-10" />
               <div>
                 <span className="font-bold text-base bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
                   Quản Lý Tồn Kho
