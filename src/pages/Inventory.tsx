@@ -12,11 +12,12 @@ import { ReturnItemDialog } from '@/components/ReturnItemDialog';
 import { ReportErrorDialog } from '@/components/ReportErrorDialog';
 import { EditItemDialog } from '@/components/EditItemDialog';
 import { BarcodeGenerator } from '@/components/BarcodeGenerator';
-import { BatchBarcodeGenerator } from '@/components/BatchBarcodeGenerator'; // Import mới
+import { BatchBarcodeGenerator } from '@/components/BatchBarcodeGenerator';
 import { getStatusDisplayName, getConditionDisplayName, getLocationDisplayName } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Checkbox } from "@/components/ui/checkbox" // Import mới
+import { Checkbox } from "@/components/ui/checkbox";
+// Bỏ import useIsMobile
 
 interface InventoryItem {
   id: string;
@@ -52,7 +53,8 @@ const Inventory = () => {
   const [locations, setLocations] = useState<string[]>([]);
   const { user, permissions } = useAuth();
   const navigate = useNavigate();
-  const [selectedItems, setSelectedItems] = useState<string[]>([]); // State mới
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  // Bỏ isMobile
 
   useEffect(() => {
     if (!user) {
@@ -397,9 +399,9 @@ const Inventory = () => {
               Hiển thị {filteredData.length} / {data.length} sản phẩm
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 md:p-2">
             {filteredData.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 px-6">
                 <div className="text-slate-400 mb-2">
                   {searchTerm ? (
                     <>
@@ -428,8 +430,8 @@ const Inventory = () => {
                 )}
               </div>
             ) : (
-              <div className="responsive-table mobile-table-scroll">
-                <table className="w-full min-w-full">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px] md:min-w-full">
                   <thead className="bg-emerald-50 sticky top-0 z-10">
                     <tr>
                        <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-10">
@@ -476,10 +478,10 @@ const Inventory = () => {
                           'bg-orange-100 text-orange-800 border-orange-300'
                         }`}>
                           <span className="hidden md:inline">{getLocationDisplayName(item.location)}</span>
-                          <span className="md:hidden leading-tight">
-                            {item.location === 'DISPLAY_T1' ? 'Kệ T1' :
-                             item.location === 'STORAGE_T1' ? 'Tủ T1' : 'Kho T3'}
-                          </span>
+                           <span className="md:hidden leading-tight">
+                             {item.location === 'DISPLAY_T1' ? 'Kệ T1' :
+                              item.location === 'STORAGE_T1' ? 'Tủ T1' : 'Kho T3'}
+                           </span>
                         </span>
                       </td>
                       <td className="p-2.5 md:p-4">
@@ -490,11 +492,11 @@ const Inventory = () => {
                           'bg-orange-100 text-orange-800 border-orange-300'
                         }`}>
                           <span className="hidden md:inline">{getConditionDisplayName(item.condition)}</span>
-                          <span className="md:hidden">
-                            {['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'New' :
-                             item.condition === 'OPEN_BOX' ? 'Open' :
-                             item.condition === 'USED' ? 'Used' : 'Ref'}
-                          </span>
+                           <span className="md:hidden">
+                             {['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'New' :
+                              item.condition === 'OPEN_BOX' ? 'Open' :
+                              item.condition === 'USED' ? 'Used' : 'Ref'}
+                           </span>
                         </span>
                       </td>
                       <td className="p-2.5 md:p-4">
@@ -505,72 +507,46 @@ const Inventory = () => {
                           'bg-red-100 text-red-800 border-red-400'
                         }`}>
                           <span className="hidden md:inline">{getStatusDisplayName(item.status)}</span>
-                          <span className="md:hidden">
-                            {item.status === 'AVAILABLE' ? 'Sẵn' :
-                             item.status === 'SOLD' ? 'Bán' : 
-                             item.status === 'HOLD' ? 'Giữ' : 'Khác'}
-                          </span>
+                           <span className="md:hidden">
+                             {item.status === 'AVAILABLE' ? 'Sẵn' :
+                              item.status === 'SOLD' ? 'Bán' : 
+                              item.status === 'HOLD' ? 'Giữ' : 'Khác'}
+                           </span>
                         </span>
                       </td>
                       <td className="p-2.5 md:p-4 text-xs md:text-sm text-slate-700 font-medium">
                         <div className="hidden md:block">{formatDate(item.received_at)}</div>
                         <div className="md:hidden">
-                          {new Date(item.received_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
-                        </div>
+                           {new Date(item.received_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                         </div>
                       </td>
                       <td className="p-2.5 md:p-4">
                         <div className="flex gap-1 md:gap-2 flex-wrap">
-                          {/* Barcode Button - Always visible */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleShowBarcode(item)}
-                            className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-400 border-2 font-semibold"
-                          >
+                          <Button size="sm" variant="outline" onClick={() => handleShowBarcode(item)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
                             <Barcode className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                             <span className="hidden md:inline ml-1">Mã</span>
                           </Button>
                           
                           {permissions.canSellItems() && item.status === 'AVAILABLE' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleSellClick(item.serial_number)}
-                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-green-50 hover:text-green-700 hover:border-green-400 border-2 font-semibold"
-                            >
+                            <Button size="sm" variant="outline" onClick={() => handleSellClick(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
                               <span className="md:hidden">Bán</span>
                               <span className="hidden md:inline">Bán Hàng</span>
                             </Button>
                           )}
                           {permissions.canSellItems() && item.status === 'SOLD' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReturnClick(item.serial_number)}
-                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 border-2 font-semibold"
-                            >
+                            <Button size="sm" variant="outline" onClick={() => handleReturnClick(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
                               <span className="md:hidden">Nhập</span>
                               <span className="hidden md:inline">Nhập Lại</span>
                             </Button>
                           )}
                           {permissions.canEditItems() && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditItem(item.serial_number)}
-                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-400 border-2 font-semibold"
-                            >
+                            <Button size="sm" variant="outline" onClick={() => handleEditItem(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
                               <Edit className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                               <span className="hidden md:inline ml-1">Sửa</span>
                             </Button>
                           )}
                           {permissions.canReportErrors() && !permissions.isAdmin() && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReportError(item.serial_number)}
-                              className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-400 border-2 font-semibold"
-                            >
+                            <Button size="sm" variant="outline" onClick={() => handleReportError(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
                               <AlertCircle className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                               <span className="hidden md:inline ml-1">Báo Lỗi</span>
                             </Button>
