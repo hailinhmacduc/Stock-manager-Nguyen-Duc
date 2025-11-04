@@ -5,16 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Plus, AlertCircle, Search, Filter, Package, X, Edit, Move, Barcode } from 'lucide-react';
+import { Loader2, Plus, AlertCircle, Search, Filter, Package, X, Edit, Move, Barcode, Printer } from 'lucide-react';
 import { AddItemDialog } from '@/components/AddItemDialog';
 import { SellItemDialog } from '@/components/SellItemDialog';
 import { ReturnItemDialog } from '@/components/ReturnItemDialog';
 import { ReportErrorDialog } from '@/components/ReportErrorDialog';
 import { EditItemDialog } from '@/components/EditItemDialog';
 import { BarcodeGenerator } from '@/components/BarcodeGenerator';
+import { BatchBarcodeGenerator } from '@/components/BatchBarcodeGenerator'; // Import mới
 import { getStatusDisplayName, getConditionDisplayName, getLocationDisplayName } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Checkbox } from "@/components/ui/checkbox" // Import mới
 
 interface InventoryItem {
   id: string;
@@ -35,46 +37,53 @@ const Inventory = () => {
   const [data, setData] = useState<InventoryItem[]>([]);
   const [filteredData, setFilteredData] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [locationFilter, setLocationFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [conditionFilter, setConditionFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
-  const [selectedSerial, setSelectedSerial] = useState('');
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [barcodeDialogOpen, setBarcodeDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState({ serial: '', name: '' });
-  const { permissions } = useAuth();
+  const [batchBarcodeDialogOpen, setBatchBarcodeDialogOpen] = useState(false); // State mới
+  const [selectedSerial, setSelectedSerial] = useState('');
+  const [selectedProductName, setSelectedProductName] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({ status: 'all', condition: 'all', location: 'all' });
+  const [locations, setLocations] = useState<string[]>([]);
+  const { user, permissions } = useAuth();
   const navigate = useNavigate();
+  const [selectedItems, setSelectedItems] = useState<string[]>([]); // State mới
 
   useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     fetchItems();
-  }, []);
+  }, [user, navigate]);
 
   // Filter and search effect
   useEffect(() => {
     let filtered = [...data];
 
     // Apply location filter
-    if (locationFilter !== 'All') {
-      filtered = filtered.filter(item => item.location === locationFilter);
+    if (filters.location !== 'all') {
+      filtered = filtered.filter(item => item.location === filters.location);
     }
 
     // Apply status filter
-    if (statusFilter !== 'All') {
-      filtered = filtered.filter(item => item.status === statusFilter);
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(item => item.status === filters.status);
     }
 
     // Apply condition filter
-    if (conditionFilter !== 'All') {
-      filtered = filtered.filter(item => item.condition === conditionFilter);
+    if (filters.condition !== 'all') {
+      filtered = filtered.filter(item => item.condition === filters.condition);
     }
 
     // Apply search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (searchTerm.trim()) {
+      const query = searchTerm.toLowerCase();
       filtered = filtered.filter(item => 
         item.serial_number.toLowerCase().includes(query) ||
         (item.sku_info?.brand || '').toLowerCase().includes(query) ||
@@ -91,7 +100,7 @@ const Inventory = () => {
     });
 
     setFilteredData(filtered);
-  }, [data, locationFilter, statusFilter, conditionFilter, searchQuery]);
+  }, [data, filters, searchTerm]);
 
   // Calculate inventory statistics
   const getInventoryStats = () => {
@@ -106,6 +115,8 @@ const Inventory = () => {
   const stats = getInventoryStats();
 
   const fetchItems = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const { data: items, error } = await supabase
         .from('inventory_items')
@@ -164,7 +175,21 @@ const Inventory = () => {
     return classes.join(' ');
   };
 
-  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(filteredData.map(item => item.serial_number));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (serialNumber: string, checked: boolean) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, serialNumber]);
+    } else {
+      setSelectedItems(prev => prev.filter(sn => sn !== serialNumber));
+    }
+  };
 
   const handleSellClick = (serialNumber: string) => {
     setSelectedSerial(serialNumber);
@@ -191,10 +216,8 @@ const Inventory = () => {
   };
 
   const handleShowBarcode = (item: InventoryItem) => {
-    setSelectedProduct({
-      serial: item.serial_number,
-      name: item.sku_info ? item.sku_info.model_name : item.sku_id
-    });
+    setSelectedSerial(item.serial_number); // Sửa lỗi ở đây
+    setSelectedProductName(item.sku_info ? `${item.sku_info.brand} ${item.sku_info.model_name}` : item.sku_id);
     setBarcodeDialogOpen(true);
   };
 
@@ -254,13 +277,13 @@ const Inventory = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
                   <Input
                     placeholder="🔍 Tìm kiếm theo serial, tên sản phẩm..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 md:pl-11 pr-10 h-10 md:h-12 border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm md:text-base"
                   />
-                  {searchQuery && (
+                  {searchTerm && (
                     <button
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => setSearchTerm('')}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 md:h-6 md:w-6 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
                     >
                       <X className="h-3 w-3 md:h-4 md:w-4" />
@@ -270,25 +293,25 @@ const Inventory = () => {
                 
                 {/* Enhanced Filters - Responsive Grid */}
                 <div className="grid grid-cols-3 gap-1.5 md:flex md:gap-2">
-                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <Select value={filters.location} onValueChange={(value) => setFilters(prev => ({ ...prev, location: value }))}>
                     <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
                       <Filter className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2 text-purple-600" />
                       <SelectValue placeholder="Vị trí" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="All">📍 Tất Cả</SelectItem>
+                      <SelectItem value="all">📍 Tất Cả</SelectItem>
                       <SelectItem value="DISPLAY_T1">🏪 Kệ T1</SelectItem>
                       <SelectItem value="STORAGE_T1">📦 Tủ T1</SelectItem>
                       <SelectItem value="WAREHOUSE_T3">🏭 Kho T3</SelectItem>
                     </SelectContent>
                   </Select>
 
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}>
                     <SelectTrigger className="w-full md:w-[130px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
                       <SelectValue placeholder="Trạng thái" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="All">📊 Tất Cả</SelectItem>
+                      <SelectItem value="all">📊 Tất Cả</SelectItem>
                       <SelectItem value="AVAILABLE">✅ Sẵn</SelectItem>
                       <SelectItem value="SOLD">💰 Bán</SelectItem>
                       <SelectItem value="HOLD">⏸️ Giữ</SelectItem>
@@ -297,12 +320,12 @@ const Inventory = () => {
                   </Select>
 
                   {/* Condition Filter */}
-                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                  <Select value={filters.condition} onValueChange={(value) => setFilters(prev => ({ ...prev, condition: value }))}>
                     <SelectTrigger className="w-full md:w-[140px] h-9 md:h-12 border-2 border-slate-200 font-medium text-xs md:text-sm px-2 md:px-3">
                       <SelectValue placeholder="Tình trạng" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="All">📋 Tất Cả</SelectItem>
+                      <SelectItem value="all">📋 Tất Cả</SelectItem>
                       <SelectItem value="NEW_SEAL">🆕 New</SelectItem>
                       <SelectItem value="OPEN_BOX">📦 Open</SelectItem>
                       <SelectItem value="USED">🔧 Cũ</SelectItem>
@@ -334,14 +357,14 @@ const Inventory = () => {
                 </div>
               </div>
             </div>
-            {(searchQuery || locationFilter !== 'All' || statusFilter !== 'All' || conditionFilter !== 'All') && (
+            {(searchTerm || filters.location !== 'all' || filters.status !== 'all' || filters.condition !== 'all') && (
               <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t-2 border-emerald-200">
                 <div className="text-xs md:text-sm text-slate-700 text-center bg-white py-1.5 md:py-2 px-3 md:px-4 rounded-lg">
                   <span className="font-bold text-emerald-700">{stats.availableCount} sản phẩm đang tồn</span>
-                  {searchQuery && <span className="ml-1 md:ml-2">• 🔍 "{searchQuery}"</span>}
-                  {locationFilter !== 'All' && <span className="ml-1 md:ml-2">• 📍 {getLocationDisplayName(locationFilter)}</span>}
-                  {statusFilter !== 'All' && <span className="ml-1 md:ml-2">• 📊 {getStatusDisplayName(statusFilter)}</span>}
-                  {conditionFilter !== 'All' && <span className="ml-1 md:ml-2">• 📋 {getConditionDisplayName(conditionFilter)}</span>}
+                  {searchTerm && <span className="ml-1 md:ml-2">• 🔍 "{searchTerm}"</span>}
+                  {filters.location !== 'all' && <span className="ml-1 md:ml-2">• 📍 {getLocationDisplayName(filters.location)}</span>}
+                  {filters.status !== 'all' && <span className="ml-1 md:ml-2">• 📊 {getStatusDisplayName(filters.status)}</span>}
+                  {filters.condition !== 'all' && <span className="ml-1 md:ml-2">• 📋 {getConditionDisplayName(filters.condition)}</span>}
                 </div>
               </div>
             )}
@@ -351,36 +374,37 @@ const Inventory = () => {
         {/* DANH SÁCH SẢN PHẨM - Phần Quan Trọng Nhất - Nổi Bật */}
         <Card className="shadow-2xl border-4 border-emerald-400 ring-2 ring-emerald-200">
           <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-emerald-100 via-teal-100 to-cyan-100 border-b-4 border-emerald-300 p-3 md:p-6">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <CardTitle className="text-lg md:text-2xl flex items-center gap-2 text-emerald-800">
-                  <Package className="h-5 w-5 md:h-6 md:w-6 text-emerald-700 flex-shrink-0" />
-                  <span className="font-extrabold">Danh Sách Sản Phẩm</span>
-                </CardTitle>
-                <CardDescription className="mt-1 md:mt-2 text-sm md:text-base text-emerald-900">
-                  📊 Hiển thị <span className="font-bold text-emerald-700 text-base md:text-lg">{filteredData.length}</span> / {data.length} sản phẩm
-                </CardDescription>
-              </div>
-              <div className="hidden md:flex gap-2 md:gap-3 text-xs md:text-sm flex-shrink-0">
-                <div className="flex items-center gap-1.5 md:gap-2 bg-emerald-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border-2 border-emerald-300">
-                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-emerald-500 rounded-full shadow-sm"></div>
-                  <span className="font-medium">Sẵn hàng</span>
-                </div>
-                <div className="flex items-center gap-1.5 md:gap-2 bg-gray-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border-2 border-gray-300">
-                  <div className="w-2.5 h-2.5 md:w-3 md:h-3 bg-gray-400 rounded-full shadow-sm"></div>
-                  <span className="font-medium">Đã bán</span>
-                </div>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+              <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-emerald-800">
+                Danh Sách Sản Phẩm
+              </CardTitle>
+              <div className="flex items-center gap-2 mt-4 md:mt-0">
+                {selectedItems.length > 0 && (
+                  <Button onClick={() => setBatchBarcodeDialogOpen(true)}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    In Mã Vạch ({selectedItems.length})
+                  </Button>
+                )}
+                {permissions.canAddItems() && (
+                  <Button onClick={() => setAddDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Thêm Sản Phẩm
+                  </Button>
+                )}
               </div>
             </div>
+            <CardDescription className="text-sm md:text-base text-gray-600 mt-2">
+              Hiển thị {filteredData.length} / {data.length} sản phẩm
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {filteredData.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-slate-400 mb-2">
-                  {searchQuery ? (
+                  {searchTerm ? (
                     <>
                       <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>Không tìm thấy sản phẩm nào với từ khóa "{searchQuery}"</p>
+                      <p>Không tìm thấy sản phẩm nào với từ khóa "{searchTerm}"</p>
                     </>
                   ) : (
                     <>
@@ -389,15 +413,13 @@ const Inventory = () => {
                     </>
                   )}
                 </div>
-                {(searchQuery || locationFilter !== 'All' || statusFilter !== 'All' || conditionFilter !== 'All') && (
+                {(searchTerm || filters.location !== 'all' || filters.status !== 'all' || filters.condition !== 'all') && (
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => {
-                      setSearchQuery('');
-                      setLocationFilter('All');
-                      setStatusFilter('All');
-                      setConditionFilter('All');
+                      setSearchTerm('');
+                      setFilters({ status: 'all', condition: 'all', location: 'all' });
                     }}
                     className="mt-2"
                   >
@@ -408,24 +430,37 @@ const Inventory = () => {
             ) : (
               <div className="responsive-table mobile-table-scroll">
                 <table className="w-full min-w-full">
-                  <thead>
-                    <tr className="border-b-2 bg-gradient-to-r from-emerald-100 to-teal-100">
-                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[110px] md:w-auto bg-emerald-50/50">Serial/ Service Tag</th>
-                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-sm md:text-base min-w-[220px] md:min-w-0 bg-emerald-100/70">Tên Sản Phẩm</th>
-                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[85px] md:w-auto">Vị Trí</th>
-                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[85px] md:w-auto">Tình Trạng</th>
-                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[85px] md:w-auto">Trạng Thái</th>
+                  <thead className="bg-emerald-50 sticky top-0 z-10">
+                    <tr>
+                       <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-10">
+                        <Checkbox
+                          checked={selectedItems.length > 0 && selectedItems.length === filteredData.length}
+                          onCheckedChange={handleSelectAll}
+                          aria-label="Select all"
+                        />
+                      </th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm">Serial/ Service Tag</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm">Tên Sản Phẩm</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm">Vị Trí</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm">Tình Trạng</th>
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm">Trạng Thái</th>
                       <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[90px] md:w-auto">Ngày Nhập</th>
                       <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-[130px] md:w-auto">Hành Động</th>
                     </tr>
                   </thead>
-                <tbody>
+                  <tbody className="divide-y divide-gray-200">
                   {filteredData.map((item) => (
-                    <tr key={item.id} className={getRowClassName(item)}>
-                      <td className="p-2.5 md:p-4 font-mono text-xs md:text-sm bg-slate-50">
-                        <div className="break-all md:truncate md:max-w-none leading-snug text-blue-700 font-medium">
-                          {item.serial_number}
-                        </div>
+                    <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-200">
+                       <td className="p-2.5 md:p-4">
+                        <Checkbox
+                          checked={selectedItems.includes(item.serial_number)}
+                          onCheckedChange={(checked) => handleSelectItem(item.serial_number, !!checked)}
+                          aria-label={`Select item ${item.serial_number}`}
+                        />
+                      </td>
+                      <td className="p-2.5 md:p-4 text-xs md:text-sm font-medium text-gray-800">
+                        <div className="font-bold text-emerald-700">{item.serial_number}</div>
+                        <div className="text-gray-500">{item.sku_id || 'N/A'}</div>
                       </td>
                       <td className="p-2.5 md:p-4 min-w-[220px] bg-emerald-50/30">
                         <div className="font-bold text-slate-900 text-sm md:text-base leading-snug">
@@ -589,8 +624,21 @@ const Inventory = () => {
       <BarcodeGenerator
         open={barcodeDialogOpen}
         onOpenChange={setBarcodeDialogOpen}
-        serialNumber={selectedProduct.serial}
-        productName={selectedProduct.name}
+        serialNumber={selectedSerial}
+        productName={selectedProductName}
+      />
+
+      <BatchBarcodeGenerator
+        open={batchBarcodeDialogOpen}
+        onOpenChange={setBatchBarcodeDialogOpen}
+        items={
+          data
+            .filter(item => selectedItems.includes(item.serial_number))
+            .map(item => ({
+              serialNumber: item.serial_number,
+              productName: `${item.sku_info?.brand} ${item.sku_info?.model_name}`
+            }))
+        }
       />
     </Layout>
   );
