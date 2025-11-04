@@ -460,7 +460,6 @@ const Inventory = () => {
                       </td>
                       <td className="p-2.5 md:p-4 text-xs md:text-sm font-medium text-gray-800">
                         <div className="font-bold text-emerald-700">{item.serial_number}</div>
-                        <div className="text-gray-500">{item.sku_id || 'N/A'}</div>
                       </td>
                       <td className="p-2.5 md:p-4 min-w-[220px] bg-emerald-50/30">
                         <div className="font-bold text-slate-900 text-sm md:text-base leading-snug">
