@@ -141,25 +141,28 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onError 
 
       // 2. Cấu hình để TỐI ƯU camera (nhiều key)
       const config = {
-        fps: 30, // Tăng FPS để quét nhạy hơn
+        fps: 25, // Giảm FPS một chút để ổn định hơn trên các thiết bị yếu
         qrbox: { width: 300, height: 150 }, // Khung chữ nhật tốt hơn cho barcode 1D
         aspectRatio: 1.777778, // 16:9 aspect ratio
         disableFlip: false,
         formatsToSupport: [
-          // ÉP BUỘC CHỈ QUÉT CODE128 ĐỂ ĐỒNG BỘ VỚI BÊN TẠO MÃ
+          // Mở rộng hỗ trợ các định dạng mã vạch 1D phổ biến
           Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.UPC_A,
         ],
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
+          // Tắt tính năng thử nghiệm để tăng độ ổn định
+          useBarCodeDetectorIfSupported: false
         },
         videoConstraints: {
           // Yêu cầu camera sau một lần nữa trong video constraints
           facingMode: "environment",
-          width: { ideal: 1920, min: 1280 }, // Tăng độ phân giải
-          height: { ideal: 1080, min: 720 },
+          // Sử dụng độ phân giải linh hoạt hơn, ưu tiên HD
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           focusMode: 'continuous',
-          exposureMode: 'continuous',
-          whiteBalanceMode: 'continuous'
         }
       };
 
@@ -348,13 +351,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onError 
                   </div>
                 </div>
               </div>
-              
-              {/* Overlay tối xung quanh khung quét */}
-              <div className="absolute inset-0 bg-black bg-opacity-50">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-[300px] h-[200px] bg-transparent border-4 border-transparent rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -457,44 +453,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onError 
               ⏹️ Dừng Quét
             </Button>
           )}
-        </div>
-      </div>
-
-      {/* Instructions với Khung Checking */}
-      <div className="bg-emerald-50 border-2 border-emerald-300 rounded-lg p-4">
-        <p className="text-base md:text-sm text-emerald-800 font-bold mb-3">🎯 Hướng dẫn quét với KHUNG CHECKING:</p>
-        <ul className="text-sm md:text-xs text-emerald-700 space-y-2 ml-4">
-          <li>• <strong>Bước 1:</strong> Nhấn "🎯 Bắt Đầu Quét" → Xuất hiện khung xanh</li>
-          <li>• <strong>Bước 2:</strong> Đưa mã vạch vào CHÍNH GIỮA khung xanh</li>
-          <li>• <strong>Khoảng cách:</strong> Giữ camera cách mã vạch 15-25cm</li>
-          <li>• <strong>Ánh sáng:</strong> Đảm bảo đủ sáng, tránh phản quang</li>
-          <li>• <strong>Thành công:</strong> Nghe "BEEP" + rung + hiển thị kết quả</li>
-        </ul>
-      </div>
-
-      {/* Troubleshooting */}
-      <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
-        <p className="text-sm md:text-xs text-amber-800 font-bold mb-2">🔧 Khắc phục sự cố:</p>
-        <div className="text-sm md:text-xs text-amber-700 space-y-2">
-          <div><strong>🚫 Không thấy khung xanh:</strong></div>
-          <div className="ml-4 space-y-1">
-            <div>• Refresh trang (F5) và cho phép quyền camera</div>
-            <div>• Thử trình duyệt khác (Chrome/Safari khuyến nghị)</div>
-          </div>
-          
-          <div><strong>🔍 Không quét được mã vạch:</strong></div>
-          <div className="ml-4 space-y-1">
-            <div>• Đưa mã vạch VÀO CHÍNH GIỮA khung xanh</div>
-            <div>• Giữ khoảng cách 15-25cm</div>
-            <div>• Giữ tay ổn định, không rung lắc</div>
-            <div>• Đảm bảo mã vạch rõ nét, không bị mờ</div>
-          </div>
-          
-          <div><strong>🔊 Không nghe thấy "BEEP":</strong></div>
-          <div className="ml-4 space-y-1">
-            <div>• Kiểm tra âm lượng điện thoại</div>
-            <div>• Vẫn có rung và hiển thị kết quả</div>
-          </div>
         </div>
       </div>
     </div>

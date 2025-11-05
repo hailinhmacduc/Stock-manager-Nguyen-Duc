@@ -16,3 +16,4 @@ CREATE INDEX IF NOT EXISTS idx_stock_move_logs_item_id ON public.stock_move_logs
 
 -- Add comment
 COMMENT ON CONSTRAINT stock_move_logs_item_id_fkey ON public.stock_move_logs IS 'Foreign key with CASCADE DELETE to allow item deletion';
+
