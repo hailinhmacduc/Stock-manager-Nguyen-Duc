@@ -9,11 +9,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    https: true, // Kích hoạt HTTPS
+    // Chỉ bật HTTPS ở local dev để test camera
+    https: mode === "development",
   },
   plugins: [
     react(),
-    basicSsl(), // Thêm plugin SSL tự ký
+    mode === "development" && basicSsl(), // Chỉ dùng SSL tự ký ở local dev
     mode === "development" && componentTagger()
   ].filter(Boolean),
   resolve: {
