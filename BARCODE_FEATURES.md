@@ -177,13 +177,109 @@
 4. **Chỉ kiểm 1 vị trí** mỗi phiên (không thể kiểm nhiều vị trí cùng lúc)
 5. **Camera cần quyền truy cập** - cho phép khi trình duyệt yêu cầu
 
+## 📱 Tính Năng 3: Quét Nhanh - Quản Lý Sản Phẩm Nhanh Chóng
+
+### Mục Đích:
+- Quét mã vạch để xem thông tin sản phẩm ngay lập tức
+- Thực hiện các thao tác quản lý nhanh chóng trên mobile
+- Tối ưu cho việc sử dụng trên điện thoại di động
+
+### Cách Sử Dụng:
+
+#### Bước 1: Vào Trang Quét Nhanh
+
+1. **Truy cập**
+   - Click "Quét Nhanh" 📷 trên thanh menu dưới cùng (mobile)
+   - Hoặc vào trực tiếp tại `/quick-scan`
+
+2. **Bắt đầu quét**
+   - Camera sẽ hiển thị ngay ở đầu trang
+   - Click "Bắt Đầu Quét" để kích hoạt camera
+
+#### Bước 2: Quét Mã Vạch Sản Phẩm
+
+1. **Quét mã vạch**
+   - Hướng camera vào mã vạch trên sản phẩm
+   - Giữ khoảng cách 10-20cm
+   - Đảm bảo đủ ánh sáng và mã vạch rõ nét
+
+2. **Xem thông tin**
+   - Sau khi quét thành công, thông tin sản phẩm sẽ hiển thị ngay bên dưới
+   - Bao gồm: Tên sản phẩm, Serial, Vị trí, Trạng thái, Tình trạng, Ngày nhập
+
+#### Bước 3: Thực Hiện Thao Tác Nhanh
+
+Các nút thao tác sẽ hiển thị dưới thông tin sản phẩm:
+
+1. **💰 Đánh Dấu Bán** (chỉ khi status = AVAILABLE)
+   - Click để đánh dấu sản phẩm đã bán
+   - Xác nhận và hoàn tất
+
+2. **🔄 Luân Chuyển**
+   - Click để di chuyển sản phẩm sang vị trí khác
+   - Chọn vị trí mới: Kệ T1, Tủ T1, hoặc Kho T3
+   - Hệ thống tự động ghi log luân chuyển
+
+3. **✏️ Chỉnh Sửa**
+   - Click để sửa thông tin sản phẩm
+   - Có thể sửa: Tên, Serial, Vị trí, Tình trạng, v.v.
+
+4. **🗑️ Xóa Sản Phẩm** (chỉ Admin)
+   - Click để xóa sản phẩm khỏi hệ thống
+   - Yêu cầu xác nhận trước khi xóa
+   - **Lưu ý**: Hành động này không thể hoàn tác
+
+#### Bước 4: Quét Sản Phẩm Tiếp Theo
+
+- Sau khi hoàn thành thao tác, có thể quét sản phẩm khác ngay
+- Không cần thoát ra và vào lại
+
+### 💡 Ưu Điểm Của Quét Nhanh
+
+#### So với Trang Kho Hàng:
+- ✅ Nhanh hơn: Không cần tìm kiếm trong danh sách dài
+- ✅ Tiện lợi hơn: Quét và thực hiện ngay, không cần chuyển trang
+- ✅ Mobile-first: Giao diện được tối ưu cho smartphone
+- ✅ Tất cả trong một: Xem thông tin và thao tác ngay tại 1 màn hình
+
+#### Phù Hợp Cho:
+- ✅ Nhân viên bán hàng: Quét và đánh dấu bán nhanh
+- ✅ Nhân viên kho: Quét và luân chuyển hàng
+- ✅ Quản lý: Kiểm tra thông tin sản phẩm nhanh chóng
+- ✅ Sử dụng trên smartphone: Giao diện lớn, dễ thao tác
+
+### 🔧 Xử Lý Sự Cố
+
+#### Không Tìm Thấy Sản Phẩm?
+1. Kiểm tra xem serial đã được nhập vào hệ thống chưa
+2. Đảm bảo mã vạch trên sản phẩm khớp với serial trong hệ thống
+3. Thử quét lại với ánh sáng tốt hơn
+
+#### Camera Không Hoạt Động?
+- Xem mục "Xử Lý Sự Cố" ở phần Tính Năng 1 & 2 ở trên
+
+### 📊 Quy Trình Làm Việc Hiệu Quả
+
+1. **Sáng**: Kiểm tra hàng mới về
+   - Vào trang Kho Hàng → Thêm sản phẩm mới
+   - In mã vạch và dán lên sản phẩm
+
+2. **Trong ngày**: Bán hàng và luân chuyển
+   - Sử dụng trang **Quét Nhanh** để:
+     - Quét và bán hàng nhanh
+     - Quét và luân chuyển kho nhanh
+
+3. **Cuối ngày**: Kiểm kho định kỳ
+   - Vào trang Kiểm Kho → Quét từng vị trí
+   - Xử lý hàng đặt sai vị trí
+
 ## 🚀 Bắt Đầu Ngay!
 
 1. Vào trang Kho Hàng
 2. Tạo mã vạch cho các sản phẩm (nếu chưa có)
 3. In mã vạch và dán lên sản phẩm
-4. Vào trang Kiểm Kho
-5. Bắt đầu quét và kiểm tra!
+4. **Sử dụng Quét Nhanh để quản lý hàng ngày** 📷✨
+5. Sử dụng Kiểm Kho để kiểm tra định kỳ
 
-**Chúc bạn kiểm kho hiệu quả! 📦✨**
+**Chúc bạn quản lý kho hiệu quả! 📦✨**
 

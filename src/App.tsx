@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import MoveItem from "./pages/MoveItem";
 import InventoryCheck from "./pages/InventoryCheck";
+import QuickScan from "./pages/QuickScan";
 import UserManagement from "./pages/UserManagement";
 import ErrorReports from "./pages/ErrorReports";
 import NotFound from "./pages/NotFound";
@@ -55,6 +56,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <InventoryCheck />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quick-scan"
+              element={
+                <ProtectedRoute>
+                  <QuickScan />
                 </ProtectedRoute>
               }
             />

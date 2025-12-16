@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { BarChart3, Package, Move, ClipboardCheck, AlertCircle, Users } from 'lucide-react';
+import { BarChart3, Package, Move, ClipboardCheck, AlertCircle, Users, Scan } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -38,6 +38,15 @@ export const BottomNavigation: React.FC = () => {
       color: 'from-blue-600 to-indigo-600',
       hoverColor: 'hover:bg-blue-50',
       show: true
+    },
+    {
+      path: '/quick-scan',
+      icon: Scan,
+      label: 'Quét Nhanh',
+      emoji: '📷',
+      color: 'from-violet-600 to-purple-600',
+      hoverColor: 'hover:bg-violet-50',
+      show: permissions.canViewInventory()
     },
     {
       path: '/inventory',
@@ -90,45 +99,73 @@ export const BottomNavigation: React.FC = () => {
   const visibleItems = navItems.filter(item => item.show);
 
   return (
-    <div className="md:hidden mobile-bottom-nav">
+    <nav className="md:hidden mobile-bottom-nav">
       {/* Decorative top border */}
       <div className="h-1 bg-gradient-to-r from-blue-500 via-emerald-500 to-purple-500"></div>
       
-      <div className="bottom-nav-grid">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.path);
-          
-          return (
-            <Link key={item.path} to={item.path} className="flex-1">
-              <div className={`
-                relative flex flex-col items-center justify-center p-2 rounded-xl mx-1 transition-all duration-300 mobile-touch-target
-                ${active 
-                  ? `mobile-nav-active ${item.color}` 
-                  : `mobile-nav-inactive ${item.hoverColor}`
-                }
-              `}>
-                <div className="relative">
-                  <Icon className={`h-5 w-5 mb-1 ${active ? 'text-white' : 'text-slate-600'}`} />
-                  {item.badge && (
-                    <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[18px] h-4 animate-pulse shadow-lg">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </div>
-                <span className={`mobile-text-xs font-medium text-center leading-tight ${
-                  active ? 'text-white' : 'text-slate-600'
-                }`}>
-                  {item.label}
-                </span>
-                {active && (
-                  <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-sm"></div>
-                )}
-              </div>
-            </Link>
-          );
-        })}
+      {/* Swipeable Navigation Container */}
+      <div className="relative">
+        {/* Scroll indicator - Left */}
+        {visibleItems.length > 5 && (
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+        )}
+        
+        {/* Scrollable Navigation */}
+        <div 
+          className="overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          <div className="flex items-center gap-1 px-2 py-2 min-w-max">
+            {visibleItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              
+              return (
+                <Link 
+                  key={item.path} 
+                  to={item.path} 
+                  className="snap-start flex-shrink-0"
+                  style={{ minWidth: visibleItems.length <= 5 ? `${100 / visibleItems.length}%` : '80px' }}
+                >
+                  <div className={`
+                    relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 mobile-touch-target
+                    ${active 
+                      ? `mobile-nav-active ${item.color}` 
+                      : `mobile-nav-inactive ${item.hoverColor}`
+                    }
+                  `}>
+                    <div className="relative">
+                      <Icon className={`h-5 w-5 mb-1 ${active ? 'text-white' : 'text-slate-600'}`} />
+                      {item.badge && (
+                        <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[18px] h-4 animate-pulse shadow-lg">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                    <span className={`mobile-text-xs font-medium text-center leading-tight whitespace-nowrap ${
+                      active ? 'text-white' : 'text-slate-600'
+                    }`}>
+                      {item.label}
+                    </span>
+                    {active && (
+                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-sm"></div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Scroll indicator - Right */}
+        {visibleItems.length > 5 && (
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+        )}
       </div>
-    </div>
+    </nav>
   );
 };

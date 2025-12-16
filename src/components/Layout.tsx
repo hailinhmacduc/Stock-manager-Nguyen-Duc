@@ -44,7 +44,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="container mx-auto px-2 md:px-4">
           <div className="flex h-16 md:h-20 items-center justify-between">
             <div className="flex items-center gap-2 md:gap-6">
-              <Link to="/dashboard" className="flex items-center gap-2 md:gap-3 hover:scale-105 transition-transform duration-200">
+              <Link to="/dashboard" className="flex items-center gap-2 md:gap-3 hover:scale-105 transition-transform duration-200 flex-shrink-0">
                 <img src="/logo.png" alt="Logo" className="h-10 w-10 md:h-12 md:w-12" />
                 <div className="hidden sm:block">
                   <span className="font-bold text-lg md:text-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
@@ -53,7 +53,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   <p className="text-xs text-muted-foreground font-medium">💻 Điện máy Nguyễn Đức</p>
                 </div>
               </Link>
-              <div className="flex gap-1 md:gap-2 overflow-x-auto">
+              <div className="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide flex-1">
                 <Link to="/dashboard">
                   <Button
                     variant={isActive('/dashboard') ? 'default' : 'ghost'}
