@@ -351,23 +351,7 @@ All colors MUST be HSL.
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Hide scrollbar for swipeable navigation */
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
-  }
-
-  /* Smooth scroll behavior for mobile nav */
-  .mobile-bottom-nav .overflow-x-auto {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Responsive grid for bottom navigation (fallback) */
+  /* Responsive grid for bottom navigation */
   .bottom-nav-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
