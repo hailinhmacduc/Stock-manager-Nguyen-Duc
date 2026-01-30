@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScanLine, Package, Search } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { Layout } from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -108,7 +108,7 @@ export default function QuickScan() {
     };
 
     return (
-        <MainLayout>
+        <Layout>
             <div className="space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Quick Scan</h1>
@@ -178,6 +178,6 @@ export default function QuickScan() {
                     </CardContent>
                 </Card>
             </div>
-        </MainLayout>
+        </Layout>
     );
 }
