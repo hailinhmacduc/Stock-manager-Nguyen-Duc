@@ -22,7 +22,7 @@ const ErrorReports = () => {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'RESOLVED' | 'DISMISSED'>('ALL');
-  
+
   const { permissions, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,11 +31,17 @@ const ErrorReports = () => {
     try {
       const { data, error } = await supabase
         .from('error_reports')
-        .select('*')
+        .select(`
+          *,
+          reporter:reported_by (
+            full_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReports(data as ErrorReport[] || []);
+      setReports(data as any[] || []);
     } catch (error) {
       console.error('Error fetching reports:', error);
       toast({
@@ -128,7 +134,7 @@ const ErrorReports = () => {
     setLoading(true);
     try {
       console.log('Attempting to delete item with serial:', serialNumber);
-      
+
       // First check if the item exists
       const { data: existingItem, error: checkError } = await supabase
         .from('inventory_items')
@@ -257,11 +263,10 @@ const ErrorReports = () => {
                   key={tab.key}
                   variant={filter === tab.key ? 'default' : 'outline'}
                   onClick={() => setFilter(tab.key)}
-                  className={`gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${
-                    filter === tab.key 
-                      ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg hover:shadow-xl' 
-                      : 'hover:bg-orange-50'
-                  }`}
+                  className={`gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-4 py-2 md:py-2.5 font-medium transition-all duration-200 ${filter === tab.key
+                    ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-lg hover:shadow-xl'
+                    : 'hover:bg-orange-50'
+                    }`}
                 >
                   <span className="md:hidden">{tab.emoji}</span>
                   <span className="hidden md:inline">{tab.label}</span>
@@ -303,15 +308,14 @@ const ErrorReports = () => {
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 mb-2">
-                          <h3 className={`font-semibold text-base md:text-lg leading-tight ${
-                            report.error_type === 'DELETE_REQUEST' ? 'text-red-600' : 'text-slate-800'
-                          }`}>
+                          <h3 className={`font-semibold text-base md:text-lg leading-tight ${report.error_type === 'DELETE_REQUEST' ? 'text-red-600' : 'text-slate-800'
+                            }`}>
                             {report.error_type === 'DELETE_REQUEST' && '🗑️ '}
                             <span className="hidden md:inline">{ERROR_TYPE_LABELS[report.error_type] || report.error_type}</span>
                             <span className="md:hidden">
-                              {report.error_type === 'DELETE_REQUEST' ? 'Yêu Cầu Xóa Sản Phẩm' : 
-                               report.error_type === 'WRONG_SERIAL' ? 'Sai Serial/Service Tag' : 
-                               ERROR_TYPE_LABELS[report.error_type] || report.error_type}
+                              {report.error_type === 'DELETE_REQUEST' ? 'Yêu Cầu Xóa Sản Phẩm' :
+                                report.error_type === 'WRONG_SERIAL' ? 'Sai Serial/Service Tag' :
+                                  ERROR_TYPE_LABELS[report.error_type] || report.error_type}
                             </span>
                           </h3>
                           <div className="flex-shrink-0">
@@ -326,7 +330,7 @@ const ErrorReports = () => {
                         <p className="text-sm md:text-base text-slate-700 mb-2 leading-snug line-clamp-2">{report.description}</p>
                         <div className="flex flex-col md:flex-row gap-1 md:gap-4 text-xs md:text-sm text-slate-500">
                           <span className="flex items-center gap-1">
-                            <span className="font-medium">👤 {report.reported_by}</span>
+                            <span className="font-medium">👤 {(report as any).reporter?.full_name || (report as any).reporter?.email || 'Không rõ'}</span>
                           </span>
                           <span className="flex items-center gap-1">
                             <span>🕒 {formatDistance(new Date(report.created_at), new Date(), { addSuffix: true, locale: vi })}</span>
@@ -379,7 +383,7 @@ const ErrorReports = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                     <div>
                       <Label className="text-xs md:text-sm text-slate-500 font-medium">Người Báo Cáo</Label>
-                      <p className="text-sm md:text-base mt-1 font-medium">{selectedReport.reported_by}</p>
+                      <p className="text-sm md:text-base mt-1 font-medium">{(selectedReport as any).reporter?.full_name || (selectedReport as any).reporter?.email || 'Không rõ'}</p>
                     </div>
                     <div>
                       <Label className="text-xs md:text-sm text-slate-500 font-medium">Thời Gian</Label>

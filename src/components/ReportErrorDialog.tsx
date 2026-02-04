@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,6 +28,13 @@ export const ReportErrorDialog: React.FC<ReportErrorDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Sync serial number when dialog opens with different product
+  useEffect(() => {
+    if (open && initialSerial) {
+      setSerialNumber(initialSerial);
+    }
+  }, [open, initialSerial]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
