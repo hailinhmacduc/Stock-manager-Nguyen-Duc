@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Plus, AlertCircle, Search, Filter, Package, X, Edit, Move, Barcode, Printer } from 'lucide-react';
+import { Loader2, Plus, AlertCircle, Search, Filter, Package, X, Edit, Move, Barcode, Printer, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { AddItemDialog } from '@/components/AddItemDialog';
 import { SellItemDialog } from '@/components/SellItemDialog';
 import { ReturnItemDialog } from '@/components/ReturnItemDialog';
@@ -86,7 +87,7 @@ const Inventory = () => {
     // Apply search query
     if (searchTerm.trim()) {
       const query = searchTerm.toLowerCase();
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.serial_number.toLowerCase().includes(query) ||
         (item.sku_info?.brand || '').toLowerCase().includes(query) ||
         (item.sku_info?.model_name || '').toLowerCase().includes(query) ||
@@ -107,7 +108,7 @@ const Inventory = () => {
   // Calculate inventory statistics
   const getInventoryStats = () => {
     const availableItems = filteredData.filter(item => item.status === 'AVAILABLE');
-    
+
     return {
       availableCount: availableItems.length,
       soldCount: filteredData.filter(item => item.status === 'SOLD').length
@@ -136,7 +137,7 @@ const Inventory = () => {
       setData(items || []);
     } catch (error) {
       console.error('Error fetching items:', error);
-      
+
       // Show user-friendly error message
       if (error instanceof Error) {
         if (error.message.includes('Failed to fetch')) {
@@ -164,7 +165,7 @@ const Inventory = () => {
 
   const getRowClassName = (item: InventoryItem) => {
     const classes = ['border-b transition-colors'];
-    
+
     if (item.status === 'SOLD') {
       classes.push('bg-gray-100 text-gray-600 opacity-75');
     } else {
@@ -173,7 +174,7 @@ const Inventory = () => {
         classes.push('bg-amber-50/30');
       }
     }
-    
+
     return classes.join(' ');
   };
 
@@ -223,6 +224,43 @@ const Inventory = () => {
     setBarcodeDialogOpen(true);
   };
 
+  // Export to Excel function
+  const exportToExcel = () => {
+    const exportData = filteredData.map((item, index) => ({
+      'STT': index + 1,
+      'Serial Number': item.serial_number,
+      'Tên Sản Phẩm': item.sku_info ? item.sku_info.model_name : item.sku_id,
+      'Thông Số Kỹ Thuật': item.sku_info?.spec || '',
+      'Vị Trí': getLocationDisplayName(item.location),
+      'Tình Trạng': getConditionDisplayName(item.condition),
+      'Trạng Thái': getStatusDisplayName(item.status),
+      'Ngày Nhập': formatDate(item.received_at),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh Sách Kho Hàng');
+
+    // Auto-fit column widths
+    const colWidths = [
+      { wch: 5 },   // STT
+      { wch: 15 },  // Serial Number
+      { wch: 50 },  // Tên Sản Phẩm
+      { wch: 60 },  // Thông Số Kỹ Thuật
+      { wch: 15 },  // Vị Trí
+      { wch: 15 },  // Tình Trạng
+      { wch: 15 },  // Trạng Thái
+      { wch: 12 },  // Ngày Nhập
+    ];
+    worksheet['!cols'] = colWidths;
+
+    // Generate filename with current date
+    const today = new Date().toISOString().split('T')[0];
+    const filename = `Danh-sach-kho-hang_${today}.xlsx`;
+
+    XLSX.writeFile(workbook, filename);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -252,8 +290,8 @@ const Inventory = () => {
               </p>
             </div>
             {permissions.canAddItems() && (
-              <Button 
-                onClick={() => setAddDialogOpen(true)} 
+              <Button
+                onClick={() => setAddDialogOpen(true)}
                 className="gap-1 md:gap-2 bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex-shrink-0 text-xs md:text-base h-8 md:h-10 px-2 md:px-4"
                 size="sm"
               >
@@ -292,7 +330,7 @@ const Inventory = () => {
                     </button>
                   )}
                 </div>
-                
+
                 {/* Enhanced Filters - Responsive Grid */}
                 <div className="grid grid-cols-3 gap-1.5 md:flex md:gap-2">
                   <Select value={filters.location} onValueChange={(value) => setFilters(prev => ({ ...prev, location: value }))}>
@@ -387,6 +425,11 @@ const Inventory = () => {
                     In Mã Vạch ({selectedItems.length})
                   </Button>
                 )}
+                <Button onClick={exportToExcel} variant="outline" className="bg-green-50 border-green-300 text-green-700 hover:bg-green-100">
+                  <Download className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Xuất Excel</span>
+                  <span className="sm:hidden">Excel</span>
+                </Button>
                 {permissions.canAddItems() && (
                   <Button onClick={() => setAddDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -416,9 +459,9 @@ const Inventory = () => {
                   )}
                 </div>
                 {(searchTerm || filters.location !== 'all' || filters.status !== 'all' || filters.condition !== 'all') && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       setSearchTerm('');
                       setFilters({ status: 'all', condition: 'all', location: 'all' });
@@ -434,7 +477,7 @@ const Inventory = () => {
                 <table className="w-full min-w-[800px] md:min-w-full">
                   <thead className="bg-emerald-50 sticky top-0 z-10">
                     <tr>
-                       <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-10">
+                      <th className="text-left p-2.5 md:p-4 font-bold text-emerald-900 text-xs md:text-sm w-10">
                         <Checkbox
                           checked={selectedItems.length > 0 && selectedItems.length === filteredData.length}
                           onCheckedChange={handleSelectAll}
@@ -451,113 +494,110 @@ const Inventory = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                  {filteredData.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-200">
-                       <td className="p-2.5 md:p-4">
-                        <Checkbox
-                          checked={selectedItems.includes(item.serial_number)}
-                          onCheckedChange={(checked) => handleSelectItem(item.serial_number, !!checked)}
-                          aria-label={`Select item ${item.serial_number}`}
-                        />
-                      </td>
-                      <td className="p-2.5 md:p-4 text-xs md:text-sm font-medium text-gray-800">
-                        <div className="font-bold text-emerald-700">{item.serial_number}</div>
-                      </td>
-                      <td className="p-2.5 md:p-4 min-w-[220px] bg-emerald-50/30">
-                        <div className="font-bold text-slate-900 text-sm md:text-base leading-snug">
-                          {item.sku_info ? item.sku_info.model_name : item.sku_id}
-                        </div>
-                        {item.sku_info && (
-                          <div className="text-xs md:text-sm text-slate-600 mt-0.5 leading-snug">{item.sku_info.spec}</div>
-                        )}
-                      </td>
-                      <td className="p-2.5 md:p-4">
-                        <span className={`inline-block px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold border ${
-                          item.location === 'DISPLAY_T1' ? 'bg-purple-100 text-purple-800 border-purple-300' :
-                          item.location === 'STORAGE_T1' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                          'bg-orange-100 text-orange-800 border-orange-300'
-                        }`}>
-                          <span className="hidden md:inline">{getLocationDisplayName(item.location)}</span>
-                           <span className="md:hidden leading-tight">
-                             {item.location === 'DISPLAY_T1' ? 'Kệ T1' :
-                              item.location === 'STORAGE_T1' ? 'Tủ T1' : 'Kho T3'}
-                           </span>
-                        </span>
-                      </td>
-                      <td className="p-2.5 md:p-4">
-                        <span className={`inline-block px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold border ${
-                          ['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'bg-green-100 text-green-800 border-green-300' :
-                          item.condition === 'OPEN_BOX' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                          item.condition === 'USED' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                          'bg-orange-100 text-orange-800 border-orange-300'
-                        }`}>
-                          <span className="hidden md:inline">{getConditionDisplayName(item.condition)}</span>
-                           <span className="md:hidden">
-                             {['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'New' :
-                              item.condition === 'OPEN_BOX' ? 'Open' :
-                              item.condition === 'USED' ? 'Used' : 'Ref'}
-                           </span>
-                        </span>
-                      </td>
-                      <td className="p-2.5 md:p-4">
-                        <span className={`px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-bold border-2 ${
-                          item.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800 border-emerald-400' :
-                          item.status === 'SOLD' ? 'bg-gray-200 text-gray-700 border-gray-300' :
-                          item.status === 'HOLD' ? 'bg-yellow-100 text-yellow-800 border-yellow-400' :
-                          'bg-red-100 text-red-800 border-red-400'
-                        }`}>
-                          <span className="hidden md:inline">{getStatusDisplayName(item.status)}</span>
-                           <span className="md:hidden">
-                             {item.status === 'AVAILABLE' ? 'Sẵn' :
-                              item.status === 'SOLD' ? 'Bán' : 
-                              item.status === 'HOLD' ? 'Giữ' : 'Khác'}
-                           </span>
-                        </span>
-                      </td>
-                      <td className="p-2.5 md:p-4 text-xs md:text-sm text-slate-700 font-medium">
-                        <div className="hidden md:block">{formatDate(item.received_at)}</div>
-                        <div className="md:hidden">
-                           {new Date(item.received_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
-                         </div>
-                      </td>
-                      <td className="p-2.5 md:p-4">
-                        <div className="flex gap-1 md:gap-2 flex-wrap">
-                          <Button size="sm" variant="outline" onClick={() => handleShowBarcode(item)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
-                            <Barcode className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
-                            <span className="hidden md:inline ml-1">Mã</span>
-                          </Button>
-                          
-                          {permissions.canSellItems() && item.status === 'AVAILABLE' && (
-                            <Button size="sm" variant="outline" onClick={() => handleSellClick(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
-                              <span className="md:hidden">Bán</span>
-                              <span className="hidden md:inline">Bán Hàng</span>
-                            </Button>
+                    {filteredData.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-200">
+                        <td className="p-2.5 md:p-4">
+                          <Checkbox
+                            checked={selectedItems.includes(item.serial_number)}
+                            onCheckedChange={(checked) => handleSelectItem(item.serial_number, !!checked)}
+                            aria-label={`Select item ${item.serial_number}`}
+                          />
+                        </td>
+                        <td className="p-2.5 md:p-4 text-xs md:text-sm font-medium text-gray-800">
+                          <div className="font-bold text-emerald-700">{item.serial_number}</div>
+                        </td>
+                        <td className="p-2.5 md:p-4 min-w-[220px] bg-emerald-50/30">
+                          <div className="font-bold text-slate-900 text-sm md:text-base leading-snug">
+                            {item.sku_info ? item.sku_info.model_name : item.sku_id}
+                          </div>
+                          {item.sku_info && (
+                            <div className="text-xs md:text-sm text-slate-600 mt-0.5 leading-snug">{item.sku_info.spec}</div>
                           )}
-                          {permissions.canSellItems() && item.status === 'SOLD' && (
-                            <Button size="sm" variant="outline" onClick={() => handleReturnClick(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
-                              <span className="md:hidden">Nhập</span>
-                              <span className="hidden md:inline">Nhập Lại</span>
+                        </td>
+                        <td className="p-2.5 md:p-4">
+                          <span className={`inline-block px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold border ${item.location === 'DISPLAY_T1' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                            item.location === 'STORAGE_T1' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                              'bg-orange-100 text-orange-800 border-orange-300'
+                            }`}>
+                            <span className="hidden md:inline">{getLocationDisplayName(item.location)}</span>
+                            <span className="md:hidden leading-tight">
+                              {item.location === 'DISPLAY_T1' ? 'Kệ T1' :
+                                item.location === 'STORAGE_T1' ? 'Tủ T1' : 'Kho T3'}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="p-2.5 md:p-4">
+                          <span className={`inline-block px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-semibold border ${['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'bg-green-100 text-green-800 border-green-300' :
+                            item.condition === 'OPEN_BOX' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                              item.condition === 'USED' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                'bg-orange-100 text-orange-800 border-orange-300'
+                            }`}>
+                            <span className="hidden md:inline">{getConditionDisplayName(item.condition)}</span>
+                            <span className="md:hidden">
+                              {['NEW_SEAL', 'NEW_BOX'].includes(item.condition) ? 'New' :
+                                item.condition === 'OPEN_BOX' ? 'Open' :
+                                  item.condition === 'USED' ? 'Used' : 'Ref'}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="p-2.5 md:p-4">
+                          <span className={`px-1.5 md:px-2.5 py-1 md:py-1.5 rounded-md text-[11px] md:text-xs font-bold border-2 ${item.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800 border-emerald-400' :
+                            item.status === 'SOLD' ? 'bg-gray-200 text-gray-700 border-gray-300' :
+                              item.status === 'HOLD' ? 'bg-yellow-100 text-yellow-800 border-yellow-400' :
+                                'bg-red-100 text-red-800 border-red-400'
+                            }`}>
+                            <span className="hidden md:inline">{getStatusDisplayName(item.status)}</span>
+                            <span className="md:hidden">
+                              {item.status === 'AVAILABLE' ? 'Sẵn' :
+                                item.status === 'SOLD' ? 'Bán' :
+                                  item.status === 'HOLD' ? 'Giữ' : 'Khác'}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="p-2.5 md:p-4 text-xs md:text-sm text-slate-700 font-medium">
+                          <div className="hidden md:block">{formatDate(item.received_at)}</div>
+                          <div className="md:hidden">
+                            {new Date(item.received_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                          </div>
+                        </td>
+                        <td className="p-2.5 md:p-4">
+                          <div className="flex gap-1 md:gap-2 flex-wrap">
+                            <Button size="sm" variant="outline" onClick={() => handleShowBarcode(item)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
+                              <Barcode className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
+                              <span className="hidden md:inline ml-1">Mã</span>
                             </Button>
-                          )}
-                          {permissions.canEditItems() && (
-                            <Button size="sm" variant="outline" onClick={() => handleEditItem(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
-                              <Edit className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
-                              <span className="hidden md:inline ml-1">Sửa</span>
-                            </Button>
-                          )}
-                          {permissions.canReportErrors() && !permissions.isAdmin() && (
-                            <Button size="sm" variant="outline" onClick={() => handleReportError(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
-                              <AlertCircle className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
-                              <span className="hidden md:inline ml-1">Báo Lỗi</span>
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                    </tbody>
-                  </table>
-                </div>
+
+                            {permissions.canSellItems() && item.status === 'AVAILABLE' && (
+                              <Button size="sm" variant="outline" onClick={() => handleSellClick(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
+                                <span className="md:hidden">Bán</span>
+                                <span className="hidden md:inline">Bán Hàng</span>
+                              </Button>
+                            )}
+                            {permissions.canSellItems() && item.status === 'SOLD' && (
+                              <Button size="sm" variant="outline" onClick={() => handleReturnClick(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
+                                <span className="md:hidden">Nhập</span>
+                                <span className="hidden md:inline">Nhập Lại</span>
+                              </Button>
+                            )}
+                            {permissions.canEditItems() && (
+                              <Button size="sm" variant="outline" onClick={() => handleEditItem(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
+                                <Edit className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
+                                <span className="hidden md:inline ml-1">Sửa</span>
+                              </Button>
+                            )}
+                            {permissions.canReportErrors() && !permissions.isAdmin() && (
+                              <Button size="sm" variant="outline" onClick={() => handleReportError(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
+                                <AlertCircle className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
+                                <span className="hidden md:inline ml-1">Báo Lỗi</span>
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </CardContent>
         </Card>
