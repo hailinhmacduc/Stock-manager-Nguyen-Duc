@@ -66,7 +66,7 @@ export const AddItemDialog: React.FC<AddItemDialogProps> = ({ open, onOpenChange
       if (!existingSku) {
         // Tạo SKU mới nếu chưa tồn tại
         const brandName = productName.split(' ')[0] || 'Unknown';
-        
+
         const { error: skuError } = await supabase.from('sku_info').insert({
           sku_id: skuId,
           brand: brandName,
@@ -177,11 +177,11 @@ export const AddItemDialog: React.FC<AddItemDialogProps> = ({ open, onOpenChange
             <p className="text-xs text-amber-600 font-medium">
               ⚠️ Serial/ Service Tag phải là duy nhất
             </p>
-            
+
             {/* Barcode Scanner */}
             {showScanner && (
               <div className="mt-4 border-2 border-blue-300 rounded-lg p-4 bg-slate-50">
-                <BarcodeScanner 
+                <BarcodeScanner
                   onScan={handleScanSuccess}
                   onError={(error) => {
                     toast({
@@ -206,6 +206,7 @@ export const AddItemDialog: React.FC<AddItemDialogProps> = ({ open, onOpenChange
                 <SelectItem value="DISPLAY_T1">🖥️ Kệ Trưng Bày T1</SelectItem>
                 <SelectItem value="STORAGE_T1">📦 Tủ Chứa T1</SelectItem>
                 <SelectItem value="WAREHOUSE_T3">🏢 Kho T3</SelectItem>
+                <SelectItem value="WARRANTY_KT">🔧 Lỗi/ Bảo Hành Phòng KT</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -225,9 +226,9 @@ export const AddItemDialog: React.FC<AddItemDialogProps> = ({ open, onOpenChange
             </Select>
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
+          <Button
+            type="submit"
+            className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             disabled={loading}
           >
             {loading ? (

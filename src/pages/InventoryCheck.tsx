@@ -150,7 +150,7 @@ const InventoryCheck = () => {
         console.error('Supabase fetch error:', fetchError);
         throw fetchError;
       }
-      
+
       if (!item) {
         toast({
           title: '❌ Không Tìm Thấy',
@@ -162,7 +162,7 @@ const InventoryCheck = () => {
       }
 
       const isMatch = item.location === checkingLocation;
-      const productName = item.sku_info 
+      const productName = item.sku_info
         ? item.sku_info.model_name
         : 'N/A';
 
@@ -200,7 +200,7 @@ const InventoryCheck = () => {
           description: `${productName}\nSerial: ${serialNumber}`,
           className: 'bg-green-50 border-green-500'
         });
-        
+
         // Vibration feedback cho khớp
         if ('vibrate' in navigator) {
           navigator.vibrate([100, 50, 100]); // 2 lần rung ngắn
@@ -212,7 +212,7 @@ const InventoryCheck = () => {
           variant: 'destructive',
           duration: 5000 // Hiển thị lâu hơn cho sai vị trí
         });
-        
+
         // Vibration feedback cho không khớp - rung dài hơn
         if ('vibrate' in navigator) {
           navigator.vibrate([200, 100, 200, 100, 200]); // Rung 3 lần dài
@@ -236,10 +236,10 @@ const InventoryCheck = () => {
     setLoading(true);
     try {
       // Tính toán kết quả chi tiết
-      const missingSummary = missingCount > 0 
-        ? `\n⚠️ CÒN THIẾU ${missingCount} SẢN PHẨM (có thể đã bán hoặc chưa quét)` 
+      const missingSummary = missingCount > 0
+        ? `\n⚠️ CÒN THIẾU ${missingCount} SẢN PHẨM (có thể đã bán hoặc chưa quét)`
         : '';
-      
+
       const mismatchSummary = mismatchedCount > 0
         ? `\n⚠️ ${mismatchedCount} sản phẩm SAI VỊ TRÍ - cần luân chuyển`
         : '';
@@ -266,8 +266,8 @@ const InventoryCheck = () => {
         `• ❌ Sai vị trí: ${mismatchedCount}${missingSummary}${mismatchSummary}`;
 
       toast({
-        title: missingCount > 0 || mismatchedCount > 0 
-          ? '⚠️ Hoàn Thành - Có Vấn Đề!' 
+        title: missingCount > 0 || mismatchedCount > 0
+          ? '⚠️ Hoàn Thành - Có Vấn Đề!'
           : '✅ Hoàn Thành - Tất Cả Khớp!',
         description: resultMessage,
         duration: 8000,
@@ -283,7 +283,7 @@ const InventoryCheck = () => {
         setCheckedItems([]);
         setExpectedItems([]);
       }, 2000);
-      
+
     } catch (error) {
       console.error('Error ending check session:', error);
       toast({
@@ -332,6 +332,7 @@ const InventoryCheck = () => {
                     <SelectItem value="DISPLAY_T1">🖥️ Kệ Trưng Bày T1</SelectItem>
                     <SelectItem value="STORAGE_T1">📦 Tủ Chứa T1</SelectItem>
                     <SelectItem value="WAREHOUSE_T3">🏢 Kho T3</SelectItem>
+                    <SelectItem value="WARRANTY_KT">🔧 Lỗi/ Bảo Hành Phòng KT</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -348,7 +349,7 @@ const InventoryCheck = () => {
               <Alert className="bg-amber-50 border-amber-300">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-amber-800 text-sm">
-                  <strong>Lưu ý:</strong> Mỗi phiên kiểm kho chỉ kiểm tra 1 vị trí. 
+                  <strong>Lưu ý:</strong> Mỗi phiên kiểm kho chỉ kiểm tra 1 vị trí.
                   Hệ thống sẽ so sánh vị trí thực tế của sản phẩm với vị trí đang kiểm.
                 </AlertDescription>
               </Alert>
@@ -468,11 +469,10 @@ const InventoryCheck = () => {
                     {checkedItems.map((item, index) => (
                       <div
                         key={`${item.serial_number}-${index}`}
-                        className={`p-4 rounded-lg border-2 shadow-md ${
-                          item.is_match
+                        className={`p-4 rounded-lg border-2 shadow-md ${item.is_match
                             ? 'bg-green-50 border-green-400'
                             : 'bg-red-50 border-red-400 ring-2 ring-red-200'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">

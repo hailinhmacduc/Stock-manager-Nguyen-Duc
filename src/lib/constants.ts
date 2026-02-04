@@ -9,7 +9,7 @@ export const INVENTORY_STATUS = {
 
 export const INVENTORY_CONDITION = {
   NEW_BOX: 'NEW_BOX',
-  OPEN_BOX: 'OPEN_BOX', 
+  OPEN_BOX: 'OPEN_BOX',
   USED: 'USED',
   REPAIRING: 'REPAIRING',
   // Backward compatibility
@@ -18,8 +18,9 @@ export const INVENTORY_CONDITION = {
 
 export const INVENTORY_LOCATION = {
   DISPLAY_T1: 'DISPLAY_T1',
-  STORAGE_T1: 'STORAGE_T1', 
-  WAREHOUSE_T3: 'WAREHOUSE_T3'
+  STORAGE_T1: 'STORAGE_T1',
+  WAREHOUSE_T3: 'WAREHOUSE_T3',
+  WARRANTY_KT: 'WARRANTY_KT'
 } as const;
 
 export type InventoryStatus = keyof typeof INVENTORY_STATUS;
@@ -68,6 +69,7 @@ export const getLocationDisplayName = (location: string): string => {
     case 'DISPLAY_T1': return 'Kệ Trưng Bày T1';
     case 'STORAGE_T1': return 'Tủ Chứa T1';
     case 'WAREHOUSE_T3': return 'Kho T3';
+    case 'WARRANTY_KT': return 'Lỗi/ Bảo Hành Phòng KT';
     default: return location;
   }
 };

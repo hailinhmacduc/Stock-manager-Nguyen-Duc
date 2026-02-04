@@ -371,6 +371,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
                     <SelectItem value="DISPLAY_T1">Kệ Trưng Bày T1</SelectItem>
                     <SelectItem value="STORAGE_T1">Tủ Chứa T1</SelectItem>
                     <SelectItem value="WAREHOUSE_T3">Kho T3</SelectItem>
+                    <SelectItem value="WARRANTY_KT">🔧 Lỗi/ Bảo Hành Phòng KT</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

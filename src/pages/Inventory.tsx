@@ -343,6 +343,7 @@ const Inventory = () => {
                       <SelectItem value="DISPLAY_T1">🏪 Kệ T1</SelectItem>
                       <SelectItem value="STORAGE_T1">📦 Tủ T1</SelectItem>
                       <SelectItem value="WAREHOUSE_T3">🏭 Kho T3</SelectItem>
+                      <SelectItem value="WARRANTY_KT">🔧 BH/KT</SelectItem>
                     </SelectContent>
                   </Select>
 

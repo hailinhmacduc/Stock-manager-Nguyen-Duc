@@ -206,12 +206,12 @@ const MoveItem = () => {
 
   // Filter available items based on search and location
   const filteredItems = availableItems.filter(item => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.sku_info?.model_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesLocation = locationFilter === 'All' || item.location === locationFilter;
-    
+
     return matchesSearch && matchesLocation;
   });
 
@@ -256,6 +256,7 @@ const MoveItem = () => {
           case 'DISPLAY_T1': return 'Kệ Trưng Bày T1';
           case 'STORAGE_T1': return 'Tủ Chứa T1';
           case 'WAREHOUSE_T3': return 'Kho T3';
+          case 'WARRANTY_KT': return 'Lỗi/ Bảo Hành Phòng KT';
           default: return loc;
         }
       };
@@ -384,6 +385,9 @@ const MoveItem = () => {
                     {selectedItem?.location !== 'WAREHOUSE_T3' && (
                       <SelectItem value="WAREHOUSE_T3">🏢 Kho Tầng 3</SelectItem>
                     )}
+                    {selectedItem?.location !== 'WARRANTY_KT' && (
+                      <SelectItem value="WARRANTY_KT">🔧 Lỗi/ Bảo Hành Phòng KT</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 {selectedItem && (
@@ -406,9 +410,9 @@ const MoveItem = () => {
                 <p className="text-xs text-muted-foreground">Tên nhân viên thực hiện luân chuyển</p>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
+              <Button
+                type="submit"
+                className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                 disabled={loading}
               >
                 {loading ? (
@@ -448,7 +452,7 @@ const MoveItem = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
                   <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold flex-shrink-0">
                     📦
@@ -460,7 +464,7 @@ const MoveItem = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
                   <div className="w-10 h-10 rounded-full bg-slate-500 flex items-center justify-center text-white font-bold flex-shrink-0">
                     🏢
@@ -492,7 +496,7 @@ const MoveItem = () => {
                 Tìm kiếm và chọn sản phẩm từ danh sách kho hàng có sẵn
               </DialogDescription>
             </DialogHeader>
-            
+
             {/* Search and Filter Section */}
             <div className="space-y-4 border-b pb-4">
               <div className="flex gap-4">
@@ -506,7 +510,7 @@ const MoveItem = () => {
                     className="pl-10"
                   />
                 </div>
-                
+
                 {/* Location Filter */}
                 <Select value={locationFilter} onValueChange={setLocationFilter}>
                   <SelectTrigger className="w-48">
@@ -517,10 +521,11 @@ const MoveItem = () => {
                     <SelectItem value="DISPLAY_T1">🖥️ Kệ Trưng Bày T1</SelectItem>
                     <SelectItem value="STORAGE_T1">📦 Tủ Chứa T1</SelectItem>
                     <SelectItem value="WAREHOUSE_T3">🏢 Kho T3</SelectItem>
+                    <SelectItem value="WARRANTY_KT">🔧 Lỗi/ Bảo Hành Phòng KT</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {/* Results Count */}
               <div className="text-sm text-gray-600">
                 Hiển thị {filteredItems.length} / {availableItems.length} sản phẩm
@@ -536,14 +541,14 @@ const MoveItem = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Product List */}
             <div className="overflow-y-auto max-h-[50vh]">
               {filteredItems.length === 0 ? (
                 <div className="text-center py-8">
                   <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-500">
-                    {availableItems.length === 0 
+                    {availableItems.length === 0
                       ? "Không có sản phẩm nào có sẵn để luân chuyển"
                       : "Không tìm thấy sản phẩm nào phù hợp"
                     }
