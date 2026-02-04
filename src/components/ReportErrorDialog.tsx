@@ -32,7 +32,7 @@ export const ReportErrorDialog: React.FC<ReportErrorDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    
+
     setLoading(true);
 
     try {
@@ -78,10 +78,10 @@ export const ReportErrorDialog: React.FC<ReportErrorDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-orange-900 flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
-            Báo Cáo Lỗi Cho Admin
+            Báo Cáo Sản Phẩm Có Vấn Đề
           </DialogTitle>
           <DialogDescription>
-            Nếu bạn nhập sai thông tin, hãy báo cáo để Admin xử lý
+            Sản phẩm sai tag, không có hàng, hoặc đã bán nhưng chưa đánh dấu? Báo cho Admin kiểm tra!
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,7 +136,7 @@ export const ReportErrorDialog: React.FC<ReportErrorDialogProps> = ({
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-sm text-amber-800">
-              <strong>Lưu ý:</strong> Chỉ Admin mới có quyền xóa/sửa sản phẩm. 
+              <strong>Lưu ý:</strong> Chỉ Admin mới có quyền xóa/sửa sản phẩm.
               Báo cáo của bạn sẽ được Admin xem xét và xử lý.
             </p>
           </div>

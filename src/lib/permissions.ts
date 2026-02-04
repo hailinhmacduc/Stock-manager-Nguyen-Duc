@@ -39,6 +39,9 @@ export interface ErrorReport {
 export const ERROR_TYPES = {
   WRONG_PRODUCT: 'WRONG_PRODUCT',
   WRONG_SERIAL: 'WRONG_SERIAL',
+  WRONG_TAG: 'WRONG_TAG',
+  NOT_IN_STOCK: 'NOT_IN_STOCK',
+  ALREADY_SOLD: 'ALREADY_SOLD',
   WRONG_PRICE: 'WRONG_PRICE',
   WRONG_LOCATION: 'WRONG_LOCATION',
   WRONG_CONDITION: 'WRONG_CONDITION',
@@ -49,6 +52,9 @@ export const ERROR_TYPES = {
 export const ERROR_TYPE_LABELS: Record<string, string> = {
   WRONG_PRODUCT: 'Sai Tên Sản Phẩm',
   WRONG_SERIAL: 'Sai Serial/Service Tag',
+  WRONG_TAG: '🏷️ Sai Tag (Mã vạch không khớp)',
+  NOT_IN_STOCK: '📦 Không Có Hàng (Nhưng hệ thống vẫn hiển thị)',
+  ALREADY_SOLD: '💰 Đã Bán Rồi (Chưa đánh dấu bán)',
   WRONG_PRICE: 'Sai Giá Vốn',
   WRONG_LOCATION: 'Sai Vị Trí',
   WRONG_CONDITION: 'Sai Tình Trạng',

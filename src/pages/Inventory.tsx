@@ -585,8 +585,8 @@ const Inventory = () => {
                                 <span className="hidden md:inline ml-1">Sửa</span>
                               </Button>
                             )}
-                            {permissions.canReportErrors() && !permissions.isAdmin() && (
-                              <Button size="sm" variant="outline" onClick={() => handleReportError(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9">
+                            {permissions.canReportErrors() && (
+                              <Button size="sm" variant="outline" onClick={() => handleReportError(item.serial_number)} className="text-xs md:text-sm px-1.5 md:px-3 py-1 md:py-1.5 h-7 md:h-9 text-orange-600 border-orange-300 hover:bg-orange-50">
                                 <AlertCircle className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-1" />
                                 <span className="hidden md:inline ml-1">Báo Lỗi</span>
                               </Button>
