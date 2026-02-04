@@ -43,6 +43,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
   const [productName, setProductName] = useState('');
   const [location, setLocation] = useState('');
   const [condition, setCondition] = useState('');
+  const [newSerialNumber, setNewSerialNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDeleteRequest, setShowDeleteRequest] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
@@ -79,6 +80,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
       setProductName(data.sku_info?.model_name || '');
       setLocation(data.location);
       setCondition(data.condition);
+      setNewSerialNumber(data.serial_number);
     } catch (error) {
       console.error('Error fetching item:', error);
       toast({
@@ -110,13 +112,20 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
         if (skuError) throw skuError;
       }
 
-      // Update inventory item
+      // Update inventory item (including serial_number if changed)
+      const updateData: { location: string; condition: string; serial_number?: string } = {
+        location,
+        condition
+      };
+
+      // Only update serial_number if it was changed and user is admin
+      if (newSerialNumber !== item.serial_number && permissions.isAdmin()) {
+        updateData.serial_number = newSerialNumber;
+      }
+
       const { error } = await supabase
         .from('inventory_items')
-        .update({
-          location,
-          condition
-        })
+        .update(updateData)
         .eq('id', item.id);
 
       if (error) throw error;
@@ -229,7 +238,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
         // Ném lỗi ra ngoài để dừng quá trình nếu không dọn dẹp được
         throw new Error('Không thể dọn dẹp lịch sử luân chuyển sản phẩm.');
       }
-      
+
       // BƯỚC 2: Sau khi dọn dẹp thành công, tiến hành xóa sản phẩm
       const { error: deleteItemError } = await supabase
         .from('inventory_items')
@@ -251,7 +260,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
       resetForm();
     } catch (error) {
       console.error('Error deleting item:', error);
-      
+
       // Hiển thị lỗi chi tiết hơn
       let errorMessage = 'Không thể xóa sản phẩm';
       if (error instanceof Error) {
@@ -263,7 +272,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
           errorMessage = error.message;
         }
       }
-      
+
       toast({
         title: '❌ Lỗi',
         description: errorMessage,
@@ -279,6 +288,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
     setProductName('');
     setLocation('');
     setCondition('');
+    setNewSerialNumber('');
     setShowDeleteRequest(false);
     setDeleteReason('');
   };
@@ -313,16 +323,31 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
             {/* Product Information */}
             <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
               <h3 className="font-semibold text-slate-900">Thông Tin Sản Phẩm</h3>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="serial" className="font-semibold">Serial/Service Tag</Label>
-                <Input
-                  id="serial"
-                  value={serialNumber}
-                  disabled
-                  className="bg-gray-100"
-                />
-                <p className="text-xs text-slate-500">Serial không thể thay đổi</p>
+                {permissions.isAdmin() ? (
+                  <>
+                    <Input
+                      id="serial"
+                      value={newSerialNumber}
+                      onChange={(e) => setNewSerialNumber(e.target.value)}
+                      placeholder="Nhập serial/service tag"
+                      required
+                    />
+                    <p className="text-xs text-amber-600">⚠️ Chỉ thay đổi khi cần thiết</p>
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      id="serial"
+                      value={serialNumber}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                    <p className="text-xs text-slate-500">Serial không thể thay đổi</p>
+                  </>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -376,7 +401,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
               >
                 Hủy
               </Button>
-              
+
               <Button
                 type="button"
                 variant="outline"
