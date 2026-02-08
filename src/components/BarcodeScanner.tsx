@@ -1,10 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Loader2, AlertTriangle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Camera, CameraOff, Loader2, AlertTriangle, Settings, Zap, ZapOff } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
 
 interface BarcodeScannerProps {
   onScan: (decodedText: string) => void;
@@ -12,448 +9,315 @@ interface BarcodeScannerProps {
 }
 
 export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onError }) => {
-  const { toast } = useToast();
-  const [isScanning, setIsScanning] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
-  const [lastScanResult, setLastScanResult] = useState<string>('');
-  const [torchSupported, setTorchSupported] = useState(false);
-  const [torchOn, setTorchOn] = useState(false);
-  
+  const [status, setStatus] = useState<'loading' | 'scanning' | 'error'>('loading');
+  const [error, setError] = useState('');
+  const [lastResult, setLastResult] = useState('');
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const mountedRef = useRef(true);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const startedRef = useRef(false);
 
-  // Unique ID that doesn't change on re-renders
-  const scannerId = useRef(`qr-reader-${Math.random().toString(36).substr(2, 9)}`).current;
+  // Multi-read confirmation: require same barcode decoded N times before accepting
+  const readBufferRef = useRef<{ text: string; count: number }>({ text: '', count: 0 });
+  const REQUIRED_READS = 2; // Must decode same barcode this many times
 
-  // Tạo âm thanh beep
-  useEffect(() => {
-    // Tạo âm thanh beep bằng Web Audio API
-    const createBeepSound = () => {
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800; // Tần số 800Hz
-        oscillator.type = 'square';
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.2);
-      } catch (error) {
-        console.warn('Cannot create beep sound:', error);
-      }
-    };
+  const scannerId = useRef(`scanner-${Date.now()}`).current;
 
-    // Lưu function để sử dụng
-    (window as any).playBeep = createBeepSound;
+  const playBeep = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = 'square';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.12);
+    } catch { /* silent */ }
   }, []);
 
-  const checkPermissions = async () => {
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      // Kiểm tra quyền camera đơn giản
-      await navigator.mediaDevices.getUserMedia({ video: true });
-      setError('');
-    } catch (err: any) {
-      let errorMsg = 'Không thể truy cập camera.';
-      if (err.name === 'NotAllowedError') {
-        errorMsg = 'Quyền truy cập camera bị từ chối. Vui lòng cấp quyền camera.';
-      } else if (err.name === 'NotFoundError') {
-        errorMsg = 'Không tìm thấy camera trên thiết bị.';
-      }
-      setError(errorMsg);
-      if (onError) onError(errorMsg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const stopScanning = async () => {
-    if (!mountedRef.current) return;
-    
-    // Tắt đèn khi dừng quét
-    if (torchOn) {
-      toggleTorch(false);
-    }
-
-    try {
-      if (scannerRef.current) {
+  const cleanup = useCallback(async () => {
+    if (scannerRef.current) {
+      try {
         const state = scannerRef.current.getState();
-        if (state === 2) { // SCANNING state
-          await scannerRef.current.stop();
-        }
+        if (state === 2) await scannerRef.current.stop();
         scannerRef.current.clear();
-        scannerRef.current = null;
-      }
-      setIsScanning(false);
-      setTorchSupported(false); // Reset hỗ trợ đèn
-    } catch (err) {
-      console.warn('Stop scanning error:', err);
-      setIsScanning(false);
+      } catch { /* ignore */ }
+      scannerRef.current = null;
     }
-  };
+  }, []);
 
-  const startScanning = async () => {
-    if (!mountedRef.current || isScanning || isLoading) return;
-    
-    setIsLoading(true);
+  const startCamera = useCallback(async () => {
+    if (!mountedRef.current || startedRef.current) return;
+    startedRef.current = true;
+
+    setStatus('loading');
     setError('');
-    setLastScanResult('');
 
-    // Thêm cơ chế báo lỗi nếu quét quá lâu
-    const scanTimeout = setTimeout(() => {
-      if (isScanning && mountedRef.current) {
-        toast({
-          title: '🔍 Không Nhận Diện Được Mã Vạch',
-          description: 'Vui lòng kiểm tra độ sáng, giữ camera ổn định và đảm bảo mã vạch rõ nét.',
-          variant: 'destructive',
-          duration: 5000,
-        });
-      }
-    }, 15000); // 15 giây
+    await cleanup();
+    await new Promise(r => setTimeout(r, 300));
+    if (!mountedRef.current) return;
 
     try {
-      // Ensure we stop any existing scanner first
-      await stopScanning();
-      
-      // Wait a bit for cleanup
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      if (!mountedRef.current) return;
-
-      // Create new scanner instance
-      scannerRef.current = new Html5Qrcode(scannerId);
-
-      // TÁCH RỜI CẤU HÌNH ĐỂ FIX LỖI
-      // 1. Cấu hình để CHỌN camera (chỉ 1 key) - ƯU TIÊN CAMERA SAU
-      const cameraSelectionConfig = { facingMode: "environment" };
-
-      // 2. Cấu hình để TỐI ƯU camera (nhiều key)
-      const config = {
-        fps: 25, // Giảm FPS một chút để ổn định hơn trên các thiết bị yếu
-        qrbox: { width: 300, height: 150 }, // Khung chữ nhật tốt hơn cho barcode 1D
-        aspectRatio: 1.777778, // 16:9 aspect ratio
-        disableFlip: false,
+      scannerRef.current = new Html5Qrcode(scannerId, {
         formatsToSupport: [
-          // Mở rộng hỗ trợ các định dạng mã vạch 1D phổ biến
           Html5QrcodeSupportedFormats.CODE_128,
           Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.CODE_93,
           Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
           Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.ITF,
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.DATA_MATRIX,
         ],
-        experimentalFeatures: {
-          // Tắt tính năng thử nghiệm để tăng độ ổn định
-          useBarCodeDetectorIfSupported: false
-        },
-        videoConstraints: {
-          // Yêu cầu camera sau một lần nữa trong video constraints
-          facingMode: "environment",
-          // Sử dụng độ phân giải linh hoạt hơn, ưu tiên HD
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          focusMode: 'continuous',
+        verbose: false,
+        useBarCodeDetectorIfSupported: true, // Use native BarcodeDetector API!
+      });
+
+      // Camera selection
+      let cameraConfig: any = { facingMode: "environment" };
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          const backCam = devices.find(d =>
+            /back|rear|environment|sau/i.test(d.label)
+          );
+          if (backCam) cameraConfig = backCam.id;
+          else if (devices.length === 1) cameraConfig = devices[0].id;
         }
-      };
+      } catch { /* fallback to facingMode */ }
+
+      if (!mountedRef.current) return;
 
       await scannerRef.current.start(
-        cameraSelectionConfig, // Truyền cấu hình CHỌN
-        config, // Truyền cấu hình TỐI ƯU
+        cameraConfig,
+        {
+          fps: 30,
+          qrbox: (vw: number, vh: number) => {
+            const w = Math.floor(Math.min(vw * 0.9, 350));
+            const h = Math.floor(Math.min(vh * 0.6, 200));
+            return { width: w, height: h };
+          },
+          aspectRatio: 1.0,
+          disableFlip: false,
+        },
         (decodedText: string) => {
           if (!mountedRef.current) return;
-          
-          console.log('🎯 Barcode detected:', decodedText);
-          setLastScanResult(decodedText);
-          
-          // Phát âm thanh beep
-          try {
-            if ((window as any).playBeep) {
-              (window as any).playBeep();
-            }
-          } catch (error) {
-            console.warn('Cannot play beep:', error);
-          }
-          
-          // Vibration feedback
-          if ('vibrate' in navigator) {
-            navigator.vibrate([100, 50, 100]); // Rung 2 lần ngắn
-          }
-          
-          // Gọi callback
-          onScan(decodedText);
-          
-          // Xóa timeout nếu quét thành công
-          clearTimeout(scanTimeout);
+          const cleaned = decodedText.trim();
+          if (!cleaned) return;
 
-          // Tạm dừng quét và chờ xử lý
-          if (scannerRef.current?.getState() === 2) { // SCANNING
-            scannerRef.current.pause(true);
-            // Quét lại sau 1.5 giây
+          // Multi-read confirmation: require same barcode N times
+          const buf = readBufferRef.current;
+          if (buf.text === cleaned) {
+            buf.count++;
+          } else {
+            buf.text = cleaned;
+            buf.count = 1;
+          }
+
+          if (buf.count < REQUIRED_READS) return; // Not confirmed yet
+
+          // Confirmed! Reset buffer and process
+          readBufferRef.current = { text: '', count: 0 };
+          setLastResult(cleaned);
+          playBeep();
+          if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+          onScan(cleaned);
+
+          // Brief pause then resume for next scan
+          try {
+            scannerRef.current?.pause(true);
             setTimeout(() => {
-              if (scannerRef.current?.getState() === 3) { // PAUSED
-                scannerRef.current.resume();
+              if (mountedRef.current && scannerRef.current) {
+                try { scannerRef.current.resume(); } catch { }
               }
             }, 1500);
-          }
+          } catch { }
         },
-        (errorMessage: string) => {
-          // Chỉ log lỗi quan trọng, bỏ qua lỗi "không tìm thấy mã"
-          if (!errorMessage.includes('NotFoundException') && 
-              !errorMessage.includes('No MultiFormat Readers')) {
-            console.debug('Scan error:', errorMessage);
-          }
-        }
+        () => { } // Ignore miss
       );
-      
-      console.log('✅ Camera started successfully');
 
-      // Kiểm tra hỗ trợ đèn flash sau khi camera khởi động
-      try {
-        const capabilities = scannerRef.current.getRunningTrackCapabilities();
-        if (capabilities.torch) {
-          console.log('🔦 Đèn flash được hỗ trợ');
-          setTorchSupported(true);
-        } else {
-          console.log('🔦 Không hỗ trợ đèn flash');
-        }
-      } catch (error) {
-        console.warn('Không thể kiểm tra hỗ trợ đèn flash:', error);
-        setTorchSupported(false);
+      if (mountedRef.current) {
+        setStatus('scanning');
+
+        // After camera starts, try to improve video quality
+        try {
+          const videoEl = document.querySelector(`#${scannerId} video`) as HTMLVideoElement;
+          if (videoEl?.srcObject) {
+            const track = (videoEl.srcObject as MediaStream).getVideoTracks()[0];
+            if (track) {
+              const capabilities = track.getCapabilities?.() as any;
+              const constraints: any = {};
+
+              // Autofocus
+              if (capabilities?.focusMode?.includes('continuous')) {
+                constraints.focusMode = 'continuous';
+              }
+              // Torch for dark environments
+              // Don't auto-enable, but store capability
+
+              if (Object.keys(constraints).length > 0) {
+                await track.applyConstraints({ advanced: [constraints] });
+              }
+            }
+          }
+        } catch { /* not critical */ }
       }
-
-      setIsScanning(true);
-      setIsLoading(false);
-      
     } catch (err: any) {
       if (!mountedRef.current) return;
-      
-      console.error('❌ Scanner start error:', err);
-      
-      let errorMsg = 'Không thể khởi động camera.';
-      if (err.name === 'NotAllowedError') {
-        errorMsg = 'Quyền truy cập camera bị từ chối. Vui lòng cấp quyền camera.';
-      } else if (err.name === 'NotFoundError') {
-        errorMsg = 'Không tìm thấy camera. Kiểm tra kết nối camera.';
-      } else if (err.name === 'NotReadableError') {
-        errorMsg = 'Camera đang được sử dụng bởi ứng dụng khác.';
-      } else if (err.name === 'OverconstrainedError') {
-        errorMsg = 'Cấu hình camera không được hỗ trợ.';
+      startedRef.current = false;
+
+      console.error('Camera error:', err);
+      const msg = String(err?.message || err || '');
+
+      let errorMsg = 'Không thể mở camera.';
+      if (msg.includes('NotAllowed') || msg.includes('Permission') || msg.includes('denied')) {
+        errorMsg = 'Camera bị từ chối. Vào Cài đặt > Safari > Camera > Cho phép.';
+      } else if (msg.includes('NotFound')) {
+        errorMsg = 'Không tìm thấy camera.';
+      } else if (msg.includes('NotReadable') || msg.includes('Could not start')) {
+        errorMsg = 'Camera đang bận. Đóng app khác dùng camera.';
+      } else if (msg.includes('Overconstrained')) {
+        retryMinimal();
+        return;
+      } else if (msg.includes('insecure') || msg.includes('secure') || msg.includes('https')) {
+        errorMsg = 'Cần HTTPS để dùng camera.';
       }
-      
+
       setError(errorMsg);
+      setStatus('error');
       if (onError) onError(errorMsg);
-      setIsLoading(false);
-      await stopScanning();
     }
-  };
+  }, [scannerId, cleanup, playBeep, onScan, onError]);
 
-  // Hàm bật/tắt đèn flash
-  const toggleTorch = async (newState?: boolean) => {
-    if (scannerRef.current && torchSupported) {
-      const capabilities = scannerRef.current.getRunningTrackCapabilities();
-      const targetState = newState !== undefined ? newState : !torchOn;
-      try {
-        await capabilities.applyConstraints({
-          advanced: [{ torch: targetState }]
-        });
-        setTorchOn(targetState);
-      } catch (err) {
-        console.error('Lỗi bật/tắt đèn:', err);
-        toast({
-          title: 'Lỗi Đèn Flash',
-          description: 'Không thể điều khiển đèn flash.',
-          variant: 'destructive',
-        });
-      }
+  const retryMinimal = useCallback(async () => {
+    await cleanup();
+    startedRef.current = false;
+    await new Promise(r => setTimeout(r, 500));
+    if (!mountedRef.current) return;
+
+    try {
+      scannerRef.current = new Html5Qrcode(scannerId, {
+        verbose: false,
+        useBarCodeDetectorIfSupported: true,
+      });
+      const devices = await Html5Qrcode.getCameras();
+      if (!devices?.length) { setError('Không tìm thấy camera.'); setStatus('error'); return; }
+      const camId = devices[devices.length - 1].id;
+
+      await scannerRef.current.start(
+        camId,
+        { fps: 15, qrbox: { width: 280, height: 160 } },
+        (text: string) => {
+          if (!mountedRef.current) return;
+          setLastResult(text);
+          playBeep();
+          if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+          onScan(text);
+        },
+        () => { }
+      );
+      if (mountedRef.current) { setStatus('scanning'); setError(''); }
+    } catch {
+      if (mountedRef.current) { setError('Không thể mở camera. Thử tải lại trang.'); setStatus('error'); }
     }
-  };
+  }, [scannerId, cleanup, playBeep, onScan]);
 
-  // Cleanup on unmount
+  const handleRetry = useCallback(() => {
+    startedRef.current = false;
+    setError('');
+    setLastResult('');
+    startCamera();
+  }, [startCamera]);
+
+  // AUTO-START
   useEffect(() => {
     mountedRef.current = true;
-    
+    const timer = setTimeout(() => startCamera(), 100);
     return () => {
+      clearTimeout(timer);
       mountedRef.current = false;
-      stopScanning();
+      cleanup();
     };
   }, []);
 
-  // Handle page visibility
+  // Pause/resume on visibility
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && isScanning) {
-        stopScanning();
+    const onVis = () => {
+      if (document.hidden && scannerRef.current) {
+        cleanup();
+        startedRef.current = false;
+      } else if (!document.hidden && status !== 'error') {
+        startCamera();
       }
     };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isScanning]);
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [status, cleanup, startCamera]);
 
   return (
-    <div className="space-y-4">
-      {/* Scanner Display Area với Khung Checking */}
-      <Card className="overflow-hidden bg-black border-4 border-emerald-400 shadow-2xl">
-        <div className="relative w-full h-[400px] md:h-[320px]">
-          {/* Scanner Container */}
-          <div
-            ref={containerRef}
-            id={scannerId}
-            className="w-full h-full flex items-center justify-center"
-            style={{
-              objectFit: 'cover'
-            }}
-          />
+    <div className="scanner-container">
+      {/* Camera viewfinder — NO dark overlay, clean view */}
+      <div className="relative w-full rounded-xl overflow-hidden bg-slate-900" style={{ aspectRatio: '1' }}>
+        <div
+          id={scannerId}
+          className="w-full h-full [&>video]:object-cover"
+          style={{ minHeight: '280px' }}
+        />
 
-          {/* KHUNG CHECKING - Overlay quét mã vạch */}
-          {isScanning && (
-            <div className="absolute inset-0 z-20 pointer-events-none">
-              {/* Khung quét chính */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative">
-                  {/* Khung quét với animation nâng cao */}
-                  <div className="w-[300px] h-[200px] border-4 border-emerald-400 rounded-lg relative overflow-hidden">
-                    {/* 4 góc khung quét với animation */}
-                    <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-emerald-300 rounded-tl-lg corner-pulse"></div>
-                    <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-emerald-300 rounded-tr-lg corner-pulse"></div>
-                    <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-emerald-300 rounded-bl-lg corner-pulse"></div>
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-emerald-300 rounded-br-lg corner-pulse"></div>
-                    
-                    {/* Đường quét di chuyển từ trên xuống */}
-                    <div className="absolute inset-0">
-                      <div className="w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent scan-line shadow-lg"></div>
-                    </div>
-                    
-                    {/* Đường ngang giữa */}
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-emerald-400 animate-pulse transform -translate-y-1/2 opacity-50"></div>
-                    
-                    {/* Hiệu ứng sáng xung quanh khung */}
-                    <div className="absolute inset-0 border-2 border-emerald-300 rounded-lg animate-pulse opacity-30"></div>
-                  </div>
-                  
-                  {/* Hướng dẫn */}
-                  <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-center">
-                    <div className="bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                      🎯 Đưa mã vạch vào khung xanh
-                    </div>
-                  </div>
-                </div>
+        {/* Minimal scan guide — just corner markers, no dark shading */}
+        {status === 'scanning' && (
+          <div className="absolute inset-0 pointer-events-none z-10">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative" style={{ width: '80%', maxWidth: '300px', height: '45%', maxHeight: '180px' }}>
+                {/* Four corners only — no border, no dark area */}
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-emerald-400 rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-emerald-400 rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-emerald-400 rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-emerald-400 rounded-br-lg" />
+                {/* Scan line */}
+                <div className="absolute inset-x-4 h-[2px] bg-emerald-400/70 animate-scan-line rounded-full" />
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Placeholder when not scanning */}
-          {!isScanning && !isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center text-center text-white p-6 z-10">
-              <div>
-                <Camera className="h-16 w-16 mx-auto mb-4 opacity-60" />
-                <p className="text-sm font-medium">Nhấn "Bắt Đầu Quét" để khởi động camera</p>
-                <p className="text-xs opacity-75 mt-2">Sẽ xuất hiện khung quét màu xanh</p>
-              </div>
+        {/* Loading */}
+        {status === 'loading' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-20">
+            <div className="text-center text-white">
+              <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-emerald-400" />
+              <p className="text-xs opacity-80">Đang mở camera...</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Loading state */}
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center text-center text-white p-6 bg-black bg-opacity-75 z-30">
-              <div>
-                <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-emerald-400" />
-                <p className="text-sm font-medium">Đang khởi động camera...</p>
-                <p className="text-xs opacity-75 mt-1">Vui lòng chờ...</p>
-              </div>
-            </div>
-          )}
-
-          {/* Nút bật/tắt đèn flash */}
-          {isScanning && torchSupported && (
-            <div className="absolute top-4 right-4 z-30">
-              <Button 
-                onClick={() => toggleTorch()}
-                variant="outline"
-                size="icon"
-                className={`rounded-full h-12 w-12 transition-all duration-300 ${
-                  torchOn 
-                    ? 'bg-amber-400 text-black border-amber-500 shadow-lg' 
-                    : 'bg-black/50 text-white border-white/50'
-                }`}
-              >
-                {torchOn ? <ZapOff className="h-6 w-6" /> : <Zap className="h-6 w-6" />}
+        {/* Error */}
+        {status === 'error' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900 z-20">
+            <div className="text-center text-white px-6">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-400" />
+              <p className="text-xs opacity-90 mb-3">{error}</p>
+              <Button onClick={handleRetry} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-xs h-8">
+                <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Thử Lại
               </Button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Kết quả quét gần đây */}
-          {lastScanResult && (
-            <div className="absolute top-4 left-4 right-4 z-25">
-              <div className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold text-center shadow-lg">
-                ✅ Đã quét: {lastScanResult}
-              </div>
+        {/* Scan result */}
+        {lastResult && (
+          <div className="absolute top-2 inset-x-2 z-30">
+            <div className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold text-center shadow-lg">
+              ✅ {lastResult}
             </div>
-          )}
-
-          {/* Scanning indicator */}
-          {isScanning && (
-            <div className="absolute bottom-4 left-0 right-0 text-center z-15">
-              <div className="inline-block bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium animate-pulse">
-                📷 Đang quét... Đưa mã vạch vào khung xanh
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription className="text-sm">{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Control Buttons - Đơn giản hóa */}
-      <div className="space-y-3">
-        <div className="flex gap-3">
-          {!isScanning ? (
-            <Button
-              onClick={startScanning}
-              disabled={isLoading}
-              className="flex-1 h-12 text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 shadow-lg"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Đang Khởi Động...
-                </>
-              ) : (
-                <>
-                  <Camera className="mr-2 h-5 w-5" />
-                  🎯 Bắt Đầu Quét
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button
-              onClick={stopScanning}
-              variant="destructive"
-              className="flex-1 h-12 text-base shadow-lg"
-            >
-              <CameraOff className="mr-2 h-5 w-5" />
-              ⏹️ Dừng Quét
-            </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

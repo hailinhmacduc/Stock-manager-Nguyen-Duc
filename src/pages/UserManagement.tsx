@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus, Shield, Eye, Package, Move as MoveIcon, DollarSign, Trash2, User as UserIcon, AlertTriangle } from 'lucide-react';
+import { Loader2, UserPlus, Shield, Eye, Package, Move as MoveIcon, DollarSign, Trash2, Users, AlertTriangle } from 'lucide-react';
 import { User, PERMISSION_PRESETS, PermissionPresetKey, UserPermissions } from '@/lib/permissions';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,7 +48,7 @@ const UserManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       // Transform data to match User interface
       const transformedUsers: User[] = (data || []).map(u => ({
         id: u.id,
@@ -63,7 +63,7 @@ const UserManagement = () => {
         is_full_access: u.is_full_access ?? false,
         is_admin: u.is_admin ?? false
       }));
-      
+
       setUsers(transformedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -427,7 +427,7 @@ const UserManagement = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
         </div>
       </Layout>
     );
@@ -435,119 +435,83 @@ const UserManagement = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="space-y-3 md:space-y-4 animate-fade-in">
+        <div className="page-header flex items-start justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1>
+              <Users className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
               Quản Lý Users
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Quản lý người dùng và phân quyền
-            </p>
+            <p>Quản lý người dùng và phân quyền</p>
           </div>
-          <Button 
-            onClick={() => { resetForm(); setDialogOpen(true); }} 
-            className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 w-full sm:w-auto"
+          <Button
+            onClick={() => { resetForm(); setDialogOpen(true); }}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 text-xs md:text-sm h-8 md:h-9 px-3"
           >
             <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">Thêm User Mới</span>
-            <span className="sm:hidden">Thêm User</span>
+            <span className="hidden sm:inline">Thêm User</span>
+            <span className="sm:hidden">Thêm</span>
           </Button>
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Danh Sách Users ({users.length} người)</CardTitle>
-            <CardDescription>
-              Click vào user để chỉnh sửa quyền
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className={`p-3 md:p-4 border rounded-lg transition-all hover:shadow-md ${
-                    !user.is_active ? 'bg-gray-50 opacity-60' : 'bg-white'
+        <div className="section-card">
+          <div className="section-card-header justify-between">
+            <div className="flex items-center gap-2">
+              <h3>Danh Sách Users</h3>
+              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{users.length}</span>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {users.map((user) => (
+              <div
+                key={user.id}
+                className={`px-3.5 py-3 transition-colors ${!user.is_active ? 'opacity-50' : 'hover:bg-slate-50'
                   }`}
-                >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                        <button
-                          onClick={() => handleViewProfile(user)}
-                          className="font-semibold text-base md:text-lg text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                        >
-                          {user.full_name || user.email}
-                        </button>
-                        {!user.is_active && (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 w-fit">
-                            Đã Vô Hiệu Hóa
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-600 mt-1">{user.email}</p>
-                      <div className="flex gap-1 md:gap-2 mt-2 flex-wrap">
-                        {getUserBadges(user).map((badge, idx) => (
-                          <Badge key={idx} className={`${badge.color} text-xs`}>
-                            {badge.label}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Mobile Actions */}
-                    <div className="flex flex-col sm:flex-row gap-2 md:hidden">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                        className="w-full sm:w-auto text-xs"
+              >
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                      <button
+                        onClick={() => handleViewProfile(user)}
+                        className="font-semibold text-base md:text-lg text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
                       >
-                        <Shield className="h-3 w-3 mr-1" />
-                        Phân Quyền
-                      </Button>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleActive(user)}
-                          disabled={user.id === currentUser?.id}
-                          className="flex-1 text-xs"
-                        >
-                          {user.is_active ? 'Vô Hiệu Hóa' : 'Kích Hoạt'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setUserToDelete(user);
-                            setDeleteDialogOpen(true);
-                          }}
-                          disabled={user.id === currentUser?.id}
-                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Xóa
-                        </Button>
-                      </div>
+                        {user.full_name || user.email}
+                      </button>
+                      {!user.is_active && (
+                        <Badge variant="outline" className="bg-red-50 text-red-700 w-fit">
+                          Đã Vô Hiệu Hóa
+                        </Badge>
+                      )}
                     </div>
+                    <p className="text-sm text-slate-600 mt-1">{user.email}</p>
+                    <div className="flex gap-1 md:gap-2 mt-2 flex-wrap">
+                      {getUserBadges(user).map((badge, idx) => (
+                        <Badge key={idx} className={`${badge.color} text-xs`}>
+                          {badge.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
-                    {/* Desktop Actions */}
-                    <div className="hidden md:flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                      >
-                        <Shield className="h-4 w-4 mr-1" />
-                        Phân Quyền
-                      </Button>
+                  {/* Mobile Actions */}
+                  <div className="flex flex-col sm:flex-row gap-2 md:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(user)}
+                      className="w-full sm:w-auto text-xs"
+                    >
+                      <Shield className="h-3 w-3 mr-1" />
+                      Phân Quyền
+                    </Button>
+                    <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => toggleActive(user)}
                         disabled={user.id === currentUser?.id}
+                        className="flex-1 text-xs"
                       >
                         {user.is_active ? 'Vô Hiệu Hóa' : 'Kích Hoạt'}
                       </Button>
@@ -559,18 +523,51 @@ const UserManagement = () => {
                           setDeleteDialogOpen(true);
                         }}
                         disabled={user.id === currentUser?.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
                       >
-                        <Trash2 className="h-4 w-4 mr-1" />
+                        <Trash2 className="h-3 w-3 mr-1" />
                         Xóa
                       </Button>
                     </div>
                   </div>
+
+                  {/* Desktop Actions */}
+                  <div className="hidden md:flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(user)}
+                    >
+                      <Shield className="h-4 w-4 mr-1" />
+                      Phân Quyền
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleActive(user)}
+                      disabled={user.id === currentUser?.id}
+                    >
+                      {user.is_active ? 'Vô Hiệu Hóa' : 'Kích Hoạt'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setUserToDelete(user);
+                        setDeleteDialogOpen(true);
+                      }}
+                      disabled={user.id === currentUser?.id}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Xóa
+                    </Button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Edit User Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -590,8 +587,8 @@ const UserManagement = () => {
                 )}
               </DialogTitle>
               <DialogDescription>
-                {editingUser 
-                  ? 'Cập nhật quyền cho user hiện tại' 
+                {editingUser
+                  ? 'Cập nhật quyền cho user hiện tại'
                   : 'Tạo tài khoản mới và phân quyền cho user'
                 }
               </DialogDescription>
@@ -623,11 +620,11 @@ const UserManagement = () => {
               <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
                 <div className="space-y-2">
                   <Label>Email {!editingUser && <span className="text-red-500">*</span>}</Label>
-                  <Input 
-                    value={email} 
+                  <Input
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={!!editingUser} 
-                    className="bg-white" 
+                    disabled={!!editingUser}
+                    className="bg-white"
                     placeholder="user@example.com"
                     required={!editingUser}
                   />
@@ -661,7 +658,7 @@ const UserManagement = () => {
               {/* Permissions */}
               <div className="space-y-4">
                 <Label className="font-semibold text-base">Chi Tiết Quyền</Label>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
@@ -772,7 +769,7 @@ const UserManagement = () => {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
                   disabled={loading}
                 >
                   {loading ? (
@@ -794,7 +791,7 @@ const UserManagement = () => {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                <UserIcon className="h-5 w-5 text-blue-600" />
+                <Users className="h-5 w-5 text-blue-600" />
                 Thông Tin User: {viewingUser?.full_name || viewingUser?.email}
               </DialogTitle>
               <DialogDescription>
@@ -828,10 +825,10 @@ const UserManagement = () => {
               <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input 
-                    value={email} 
-                    disabled 
-                    className="bg-gray-100" 
+                  <Input
+                    value={email}
+                    disabled
+                    className="bg-gray-100"
                   />
                   <p className="text-xs text-slate-500">Email không thể thay đổi</p>
                 </div>
@@ -860,7 +857,7 @@ const UserManagement = () => {
               {/* Permissions */}
               <div className="space-y-4">
                 <Label className="font-semibold text-base">Chi Tiết Quyền</Label>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
@@ -971,7 +968,7 @@ const UserManagement = () => {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
                   disabled={loading}
                 >
                   {loading ? (

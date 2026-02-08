@@ -2,160 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global Font Size Optimization - Enhanced for Mobile */
+/* ===== UNIFIED DESIGN SYSTEM ===== */
+
 @layer base {
   html {
-    font-size: 16px; /* Increased for better mobile readability */
+    font-size: 16px;
   }
-  
+
   @media (max-width: 768px) {
     html {
-      font-size: 15px; /* Increased from 13px to 15px */
+      font-size: 15px;
     }
   }
-  
+
   body {
-    @apply text-base; /* Changed from text-sm to text-base */
+    @apply text-base;
   }
-  
+
   h1 {
-    @apply text-2xl md:text-3xl; /* Increased size */
+    @apply text-2xl md:text-3xl;
   }
-  
+
   h2 {
-    @apply text-xl md:text-2xl; /* Increased size */
+    @apply text-xl md:text-2xl;
   }
-  
+
   h3 {
-    @apply text-lg md:text-xl; /* Increased size */
+    @apply text-lg md:text-xl;
   }
 }
 
-/* Responsive Table Optimization - Enhanced for Mobile */
-@layer components {
-  .responsive-table {
-    @apply w-full overflow-x-auto;
-  }
-  
-  /* Animation cho khung quét mã vạch */
-  @keyframes scanLine {
-    0% { transform: translateY(-100%); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translateY(200px); opacity: 0; }
-  }
-  
-  .scan-line {
-    animation: scanLine 2s ease-in-out infinite;
-  }
-  
-  @keyframes cornerPulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
-  }
-  
-  .corner-pulse {
-    animation: cornerPulse 1.5s ease-in-out infinite;
-  }
-  
-  .responsive-table table {
-    @apply min-w-full text-sm md:text-base; /* Increased from text-xs to text-sm */
-  }
-  
-  .responsive-table th,
-  .responsive-table td {
-    @apply px-3 py-2 md:px-4 md:py-3; /* Increased padding */
-  }
-  
-  /* Mobile Table Optimization */
-  @media (max-width: 768px) {
-    .responsive-table table {
-      min-width: 100%; /* Allow full width on mobile */
-    }
-    
-    /* Make product name column prominently visible */
-    .responsive-table th:nth-child(2),
-    .responsive-table td:nth-child(2) {
-      min-width: 240px; /* Increased for better visibility */
-      font-size: 0.95rem; /* Larger font for product names */
-      font-weight: 600; /* Bold product names */
-    }
-    
-    /* Compact but readable other columns */
-    .responsive-table th:not(:nth-child(2)),
-    .responsive-table td:not(:nth-child(2)) {
-      white-space: nowrap;
-      font-size: 0.85rem; /* Larger than before */
-    }
-    
-    /* Serial number column */
-    .responsive-table th:nth-child(1),
-    .responsive-table td:nth-child(1) {
-      min-width: 140px;
-      font-size: 0.8rem;
-    }
-  }
-  
-  /* Compact Cards on Mobile */
-  .compact-card {
-    @apply p-4 md:p-6; /* Increased padding */
-  }
-  
-  .compact-card-header {
-    @apply pb-2 md:pb-3;
-  }
-  
-  .compact-card-title {
-    @apply text-lg md:text-xl; /* Increased size */
-  }
-  
-  .compact-card-description {
-    @apply text-sm md:text-base; /* Increased size */
-  }
-  
-  /* Mobile-optimized spacing */
-  .mobile-compact {
-    @apply space-y-3 md:space-y-6;
-  }
-  
-  /* Mobile header optimization */
-  .mobile-header {
-    @apply p-4 md:p-8;
-  }
-  
-  .mobile-header h1 {
-    @apply text-xl md:text-4xl;
-  }
-  
-  .mobile-header p {
-    @apply text-sm md:text-lg;
-  }
-}
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ===== DESIGN TOKENS ===== */
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 216 20% 93%;
     --foreground: 215 25% 15%;
 
-    --card: 0 0% 100%;
+    --card: 210 20% 99%;
     --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    --primary: 215 80% 45%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 15% 92%;
+    --secondary: 210 15% 90%;
     --secondary-foreground: 215 25% 15%;
 
-    --muted: 210 15% 95%;
+    --muted: 210 15% 92%;
     --muted-foreground: 215 15% 45%;
 
-    --accent: 215 80% 45%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
@@ -167,17 +66,17 @@ All colors MUST be HSL.
     --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
-    --border: 215 15% 88%;
-    --input: 215 15% 88%;
-    --ring: 215 80% 45%;
+    --border: 215 18% 82%;
+    --input: 215 15% 85%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --table-header: 215 20% 96%;
-    --table-row-even: 0 0% 100%;
-    --table-row-odd: 210 15% 99%;
-    --table-row-hover: 215 30% 97%;
-    
+    --table-header: 215 25% 93%;
+    --table-row-even: 210 20% 99%;
+    --table-row-odd: 215 18% 96%;
+    --table-row-hover: 215 30% 94%;
+
     --highlight-aging: 45 100% 88%;
     --highlight-sold: 0 50% 95%;
     --highlight-open: 40 95% 92%;
@@ -193,7 +92,7 @@ All colors MUST be HSL.
     --popover: 215 22% 15%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 215 75% 55%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 215 20% 20%;
@@ -202,7 +101,7 @@ All colors MUST be HSL.
     --muted: 215 20% 18%;
     --muted-foreground: 215 10% 60%;
 
-    --accent: 215 75% 55%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 65% 55%;
@@ -216,13 +115,13 @@ All colors MUST be HSL.
 
     --border: 215 20% 22%;
     --input: 215 20% 22%;
-    --ring: 215 75% 55%;
+    --ring: 217 91% 60%;
 
     --table-header: 215 22% 18%;
     --table-row-even: 215 22% 15%;
     --table-row-odd: 215 20% 16%;
     --table-row-hover: 215 25% 20%;
-    
+
     --highlight-aging: 45 80% 25%;
     --highlight-sold: 0 40% 25%;
     --highlight-open: 40 75% 28%;
@@ -239,268 +138,313 @@ All colors MUST be HSL.
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-bold;
   }
 }
 
+/* ===== COMPONENT STYLES ===== */
+
+@layer components {
+
+  /* --- Unified Page Header --- */
+  .page-header {
+    @apply pb-4 mb-2;
+  }
+
+  .page-header h1 {
+    @apply text-xl md:text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2;
+  }
+
+  .page-header p {
+    @apply text-sm text-slate-500 mt-0.5;
+  }
+
+  /* --- Unified Stat Card --- */
+  .stat-card {
+    @apply bg-white rounded-xl p-4 border border-slate-200 transition-all duration-200 shadow-sm;
+    @apply hover:shadow-md hover:border-slate-300;
+  }
+
+  /* --- Stat Card Color Variants --- */
+  .stat-card-blue {
+    @apply stat-card border-l-4 border-l-blue-500;
+  }
+
+  .stat-card-green {
+    @apply stat-card border-l-4 border-l-emerald-500;
+  }
+
+  .stat-card-amber {
+    @apply stat-card border-l-4 border-l-amber-500;
+  }
+
+  .stat-card-red {
+    @apply stat-card border-l-4 border-l-red-500;
+  }
+
+  /* --- Unified Section Card --- */
+  .section-card {
+    @apply bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm;
+  }
+
+  .section-card-header {
+    @apply px-4 py-3 border-b border-slate-200 bg-slate-50/80;
+  }
+
+  .section-card-content {
+    @apply p-4;
+  }
+
+  /* --- Responsive Table --- */
+  .responsive-table {
+    @apply w-full overflow-x-auto;
+  }
+
+  .responsive-table table {
+    @apply min-w-full text-sm md:text-base;
+  }
+
+  .responsive-table th {
+    @apply px-3 py-2.5 md:px-4 md:py-3 bg-slate-100 text-slate-600 font-semibold text-xs uppercase tracking-wider;
+  }
+
+  .responsive-table td {
+    @apply px-3 py-2 md:px-4 md:py-3;
+  }
+
+  .responsive-table tbody tr:nth-child(even) {
+    @apply bg-slate-50/50;
+  }
+
+  .responsive-table tbody tr {
+    @apply hover:bg-blue-50/40 transition-colors;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes scanLine {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(200px);
+    opacity: 0;
+  }
+}
+
+.scan-line {
+  animation: scanLine 2s ease-in-out infinite;
+}
+
+@keyframes cornerPulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.corner-pulse {
+  animation: cornerPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-delay-1 {
+  animation-delay: 0.05s;
+}
+
+.animate-delay-2 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-3 {
+  animation-delay: 0.15s;
+}
+
+.animate-delay-4 {
+  animation-delay: 0.2s;
+}
+
+/* ===== BOTTOM NAVIGATION ===== */
+
+.mobile-bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-slate-200 shadow-lg;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav-flex {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.25rem 0.125rem;
+  gap: 0;
+}
+
+.bottom-nav-item {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 60px;
+}
+
+.mobile-nav-active {
+  @apply bg-blue-600 text-white rounded-xl shadow-md;
+}
+
+.mobile-nav-inactive {
+  @apply text-slate-500 rounded-xl;
+  @apply active:bg-slate-100 active:scale-95;
+}
+
+/* ===== MOBILE UTILITIES ===== */
+
 @layer utilities {
-  /* Smooth transitions */
-  .transition-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Custom shadows */
-  .shadow-soft {
-    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
-  }
-
-  .shadow-glow-blue {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
-  }
-
-  /* Card hover effects */
-  .card-hover {
-    @apply transition-smooth hover:shadow-lg hover:-translate-y-0.5;
-  }
-
-  /* Gradient text utilities */
-  .gradient-text-blue {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent;
-  }
-
-  /* Badge styles */
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-
-  .badge-success {
-    @apply bg-green-100 text-green-800;
-  }
-
-  .badge-warning {
-    @apply bg-amber-100 text-amber-800;
-  }
-
-  .badge-danger {
-    @apply bg-red-100 text-red-800;
-  }
-
-  .badge-info {
-    @apply bg-blue-100 text-blue-800;
-  }
-
-  /* Status indicators */
-  .status-dot {
-    @apply inline-block w-2 h-2 rounded-full;
-  }
-
-  .status-dot-success {
-    @apply status-dot bg-green-500;
-  }
-
-  .status-dot-warning {
-    @apply status-dot bg-amber-500;
-  }
-
-  .status-dot-danger {
-    @apply status-dot bg-red-500;
-  }
-
-  /* Animations */
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slide-in {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out;
-  }
-
-  .animate-slide-in {
-    animation: slide-in 0.3s ease-out;
-  }
-
-  /* Safe area support for mobile devices with home indicator */
-  .h-safe-area-inset-bottom {
-    height: env(safe-area-inset-bottom);
-  }
-
-  .pb-safe-area {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Mobile bottom navigation styles */
-  .mobile-bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-slate-200 shadow-2xl;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Responsive grid for bottom navigation */
-  .bottom-nav-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 0;
-    padding: 0.5rem 0.25rem;
-  }
-
-  @media (min-width: 640px) {
-    .bottom-nav-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .bottom-nav-grid {
-      grid-template-columns: repeat(6, 1fr);
-    }
-  }
-
-  /* Enhanced mobile touch targets */
   .mobile-touch-target {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+    min-height: 44px;
+    min-width: 44px;
   }
 
-  /* Mobile-first responsive utilities */
-  .mobile-text-xs {
-    @apply text-xs sm:text-sm;
+  .mobile-compact {
+    @apply px-3 py-2;
   }
 
-  .mobile-text-sm {
-    @apply text-sm sm:text-base;
-  }
-
-  .mobile-text-base {
-    @apply text-base sm:text-lg;
-  }
-
-  /* Mobile navigation active state */
-  .mobile-nav-active {
-    @apply bg-gradient-to-br text-white shadow-lg transform scale-105;
-  }
-
-  .mobile-nav-inactive {
-    @apply text-slate-600 hover:text-slate-800 active:scale-95;
-  }
-
-  /* Mobile table improvements */
-  @media (max-width: 768px) {
-    .mobile-table-scroll {
-      @apply overflow-x-auto;
-      scrollbar-width: thin;
-      scrollbar-color: #cbd5e1 #f1f5f9;
-    }
-    
-    .mobile-table-scroll::-webkit-scrollbar {
-      height: 4px;
-    }
-    
-    .mobile-table-scroll::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 2px;
-    }
-    
-    .mobile-table-scroll::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 2px;
-    }
-    
-    .mobile-table-scroll::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-  }
-
-  /* Mobile card optimizations */
   .mobile-card-compact {
-    @apply p-3 md:p-6 space-y-2 md:space-y-4;
+    @apply p-3;
   }
 
-  .mobile-stats-grid {
-    @apply grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4;
-  }
-
-  /* Mobile button improvements */
-  .mobile-button-sm {
-    @apply px-2 py-1 text-xs md:px-3 md:py-1.5 md:text-sm;
-  }
-
-  .mobile-button-base {
-    @apply px-3 py-2 text-sm md:px-4 md:py-2.5 md:text-base;
-  }
-
-  /* Sticky search and filter improvements */
-  .sticky-search-filters {
-    @apply sticky bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50;
-    z-index: 40; /* Higher than bottom nav (z-50) but below modals */
-    top: 4rem; /* 64px for mobile header */
-    padding-bottom: 0.5rem;
-  }
-
-  @media (min-width: 768px) {
-    .sticky-search-filters {
-      top: 5rem; /* 80px for desktop header */
-      padding-bottom: 1rem;
-    }
-  }
-
-  /* Enhanced backdrop blur for sticky elements */
-  .sticky-backdrop {
-    @apply bg-white/95 backdrop-blur-sm border-2;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.06);
-  }
-
-  /* Smooth sticky transition */
-  .sticky-transition {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Mobile sticky adjustments */
   @media (max-width: 768px) {
-    .mobile-sticky-top {
-      top: 4rem; /* Adjust for mobile header height */
-    }
-    
-    .mobile-sticky-padding {
-      padding-bottom: 0.5rem;
+    .responsive-table table {
+      min-width: 100%;
     }
   }
+}
 
-  /* Text truncation utilities */
-  .line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+/* ===== STICKY ELEMENTS ===== */
+
+.sticky-header {
+  @apply sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
   }
 
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ===== SCROLLBAR ===== */
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
+/* ===== SCANNER OVERRIDES ===== */
+
+/* Remove html5-qrcode's dark shading overlay around scan region */
+.scanner-container [id^="scanner-"]>div:not(:first-child) {
+  opacity: 0.15 !important;
+}
+
+/* Hide the built-in scan-region border */
+#qr-shaded-region {
+  border: none !important;
+}
+
+/* Make video fill container naturally */
+.scanner-container video {
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hide html5-qrcode branding text */
+.scanner-container img[alt="Info icon"],
+.scanner-container a[href*="scanapp"] {
+  display: none !important;
+}
+
+/* ===== SCANNER ANIMATION ===== */
+
+@keyframes scan-line {
+  0% {
+    top: 0;
   }
 
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  50% {
+    top: calc(100% - 2px);
   }
+
+  100% {
+    top: 0;
+  }
+}
+
+.animate-scan-line {
+  position: absolute;
+  animation: scan-line 2s ease-in-out infinite;
 }
