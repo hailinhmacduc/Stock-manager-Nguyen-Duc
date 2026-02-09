@@ -14,6 +14,7 @@ import QuickScan from "./pages/QuickScan";
 import UserManagement from "./pages/UserManagement";
 import ErrorReports from "./pages/ErrorReports";
 import NotFound from "./pages/NotFound";
+import ApiKeyManagement from "./pages/ApiKeyManagement";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ErrorReports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/api-keys"
+              element={
+                <ProtectedRoute>
+                  <ApiKeyManagement />
                 </ProtectedRoute>
               }
             />

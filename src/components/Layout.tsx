@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, Package, BarChart3, Move, Users, AlertCircle, ClipboardCheck } from 'lucide-react';
+import { LogOut, Package, BarChart3, Move, Users, AlertCircle, ClipboardCheck, Key } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BottomNavigation } from '@/components/BottomNavigation';
@@ -111,6 +111,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <Button variant="ghost" size="sm" className={navLinkClass(isActive('/users'))}>
                       <Users className="h-4 w-4" />
                       <span>Users</span>
+                    </Button>
+                  </Link>
+                )}
+
+                {permissions.isAdmin() && (
+                  <Link to="/api-keys">
+                    <Button variant="ghost" size="sm" className={navLinkClass(isActive('/api-keys'))}>
+                      <Key className="h-4 w-4" />
+                      <span>API</span>
                     </Button>
                   </Link>
                 )}
