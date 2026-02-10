@@ -180,7 +180,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <BottomNavigation />
 
       {/* Main Content */}
-      <main className="container mx-auto px-3 md:px-4 py-4 md:py-6 pt-28 md:pt-6">{children}</main>
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-6 pt-[100px] md:pt-6">{children}</main>
     </div>
   );
 };

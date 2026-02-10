@@ -41,32 +41,29 @@ export const BottomNavigation: React.FC = () => {
   const visibleItems = navItems.filter(item => item.show);
 
   return (
-    <div className="md:hidden mobile-bottom-nav">
-      <div className="bottom-nav-flex">
+    <div className="md:hidden mobile-top-nav">
+      <div className="mobile-nav-scroll">
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
 
           return (
-            <Link key={item.path} to={item.path} className="bottom-nav-item">
-              <div className={`
-                relative flex flex-col items-center justify-center py-1 rounded-xl
-                transition-all duration-200
-                ${active ? 'mobile-nav-active' : 'mobile-nav-inactive'}
-              `}>
-                <div className="relative">
-                  <Icon className={`h-[18px] w-[18px] ${active ? 'text-white' : 'text-slate-500'}`} strokeWidth={active ? 2.5 : 1.8} />
-                  {item.badge && (
-                    <Badge className="absolute -top-1.5 -right-2.5 bg-red-500 text-white text-[8px] px-1 min-w-[14px] h-3.5 shadow-sm">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </div>
-                <span className={`text-[9px] mt-0.5 font-medium leading-tight truncate w-full text-center ${active ? 'text-white' : 'text-slate-500'
-                  }`}>
-                  {item.label}
-                </span>
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`mobile-nav-pill ${active ? 'mobile-nav-pill-active' : 'mobile-nav-pill-inactive'}`}
+            >
+              <div className="relative">
+                <Icon className="h-4 w-4" strokeWidth={active ? 2.5 : 1.8} />
+                {item.badge && (
+                  <Badge className="absolute -top-2 -right-3 bg-red-500 text-white text-[7px] px-1 min-w-[14px] h-3.5 shadow-sm border-0">
+                    {item.badge}
+                  </Badge>
+                )}
               </div>
+              <span className="text-[11px] font-medium whitespace-nowrap">
+                {item.label}
+              </span>
             </Link>
           );
         })}
