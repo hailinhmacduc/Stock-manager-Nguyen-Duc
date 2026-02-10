@@ -318,8 +318,7 @@
 /* ===== BOTTOM NAVIGATION ===== */
 
 .mobile-bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-slate-200 shadow-lg;
-  padding-bottom: env(safe-area-inset-bottom);
+  @apply fixed top-[52px] left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-b border-slate-200 shadow-sm;
 }
 
 .bottom-nav-flex {

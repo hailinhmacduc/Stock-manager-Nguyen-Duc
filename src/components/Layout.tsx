@@ -176,11 +176,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 md:px-4 py-4 md:py-6 pb-24 md:pb-6">{children}</main>
-
-      {/* Bottom Navigation for Mobile */}
+      {/* Top Navigation for Mobile */}
       <BottomNavigation />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-6 pt-16 md:pt-6">{children}</main>
     </div>
   );
 };
