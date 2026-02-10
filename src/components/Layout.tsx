@@ -148,7 +148,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       </nav>
 
       {/* Mobile Header */}
-      <header className="md:hidden bg-white/95 backdrop-blur-lg shadow-sm fixed top-0 left-0 right-0 z-50 border-b border-slate-200">
+      <header className="md:hidden bg-white/95 backdrop-blur-lg shadow-sm fixed top-0 left-0 right-0 z-50 border-b border-slate-200 safe-area-top">
         <div className="px-3 py-2.5">
           <div className="flex items-center justify-between">
             <Link to="/dashboard" className="flex items-center gap-2">

@@ -1,0 +1,25 @@
+{
+    "name": "Quản Lý Tồn Kho - Điện Máy Nguyễn Đức",
+    "short_name": "Tồn Kho ND",
+    "description": "Hệ thống quản lý tồn kho nội bộ",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
